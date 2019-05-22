@@ -24,6 +24,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+/**
+ * @author lee
+ * @param <T>
+ * @param <DTO>
+ * @param <D>
+ */
 @Data
 @AllArgsConstructor
 @Component

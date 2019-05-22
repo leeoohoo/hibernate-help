@@ -4,6 +4,9 @@ import lombok.Data;
 
 import javax.persistence.criteria.Root;
 
+/**
+ * @author lee
+ */
 @Data
 public class JoinRoot {
 

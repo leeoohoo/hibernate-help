@@ -4,6 +4,11 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * @author lee
+ * @param <DTO>
+ * @param <T>
+ */
 @Data
 public class DtoOrT<DTO,T> {
 

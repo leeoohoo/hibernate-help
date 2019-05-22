@@ -16,7 +16,6 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @SpringBootApplication
-@EnableJpaRepositories({"com.learn.hibernate.repository"})
 @EntityScan("com.learn.hibernate.entity")
 public class HibernateApplication {
 
