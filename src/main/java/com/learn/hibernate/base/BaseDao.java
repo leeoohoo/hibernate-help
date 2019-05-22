@@ -11,7 +11,7 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -32,7 +32,7 @@ import java.util.*;
  */
 @Data
 @AllArgsConstructor
-@Component
+@Service
 @PropertySource("classpath:my_base_dao.properties")
 public class BaseDao<T, DTO, D>  {
 
@@ -81,6 +81,12 @@ public class BaseDao<T, DTO, D>  {
         getBQR();
     }
 
+    public void init(Class<T> entityClz, Class<DTO> dtoClz)  {
+        this.tClass = entityClz;
+        this.dtoClass = dtoClz;
+        getBQR();
+    }
+
 
 
     private void getBQR() {
@@ -119,7 +125,7 @@ public class BaseDao<T, DTO, D>  {
         var list = Arrays.asList(ids);
 
         for (String id : list) {
-            var result = delete((D) id, false);
+            var result = delete((D) id,false);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -132,7 +138,7 @@ public class BaseDao<T, DTO, D>  {
     public boolean deleteByIsDeletedBach(String... ids) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
         var list = Arrays.asList(ids);
         for (String id : list) {
-            var result = delete((D) id, true);
+            var result = delete((D) id,true);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -202,6 +208,7 @@ public class BaseDao<T, DTO, D>  {
             myPageData.putAll(pageData.getMap());
         }
         List<Predicate> list = getPredicates(myPageData);
+
         cq.where(list.toArray(Predicate[]::new));
         if (fileds.length <= 0) {
             selectFilds(isT);
@@ -213,10 +220,11 @@ public class BaseDao<T, DTO, D>  {
     }
 
     /**
-     * 获取列表
      *
      * @param pageData
+     * @param isT
      * @return
+     * @throws ClassNotFoundException
      */
     public DtoOrT getDtoOrTList(PageData pageData, boolean isT) throws ClassNotFoundException {
         var query = getListQuery(pageData, isT);
@@ -237,7 +245,7 @@ public class BaseDao<T, DTO, D>  {
      * @return
      */
     public List<DTO> getDtoList(PageData pageData, String... fileds) throws ClassNotFoundException {
-        var query = getListQuery(pageData, false, fileds);
+        var query = getListQuery(pageData,false, fileds);
         List<Tuple> result = query.getResultList();
         return getDtoList(result);
     }
@@ -277,8 +285,9 @@ public class BaseDao<T, DTO, D>  {
 
 
     public Query getListQuery(PageData pageData, boolean isT, String... fileds) throws ClassNotFoundException {
-        var p = getPredicates(pageData).toArray(Predicate[]::new);
-        cq.where(p);
+        var p = getPredicates(pageData);
+
+        cq.where(p.toArray(Predicate[]::new));
         if (fileds.length <= 0) {
             selectFilds(isT);
         } else {
@@ -287,6 +296,8 @@ public class BaseDao<T, DTO, D>  {
         var query = getQuery();
         return query;
     }
+
+
 
 
     /**
@@ -522,6 +533,12 @@ public class BaseDao<T, DTO, D>  {
                 case "lt":
                     ps.add(getPredicateLt(stes[0], (Number) entry.getValue()));
                     break;
+                case "in":
+                    ps.add(getPredicateIn(stes[0], (List) entry.getValue()));
+                    break;
+                case "notIn":
+                    ps.add(getPredicateNotIn(stes[0], (List) entry.getValue()));
+                    break;
             }
         }
 
@@ -564,6 +581,14 @@ public class BaseDao<T, DTO, D>  {
         var in = getCb().in(joinRoot.getRoot().get(joinRoot.getFiled()));
         value.forEach(in::value);
         return in;
+    }
+
+    public Predicate getPredicateNotIn(String fildName, List value) throws ClassNotFoundException {
+        var joinRoot = getRoot(fildName);
+        var in = getCb().in(joinRoot.getRoot().get(joinRoot.getFiled()));
+        value.forEach(in::value);
+        var notIn = getCb().not(in);
+        return notIn;
     }
 
     public JoinRoot getRoot(String filedName) throws ClassNotFoundException {
