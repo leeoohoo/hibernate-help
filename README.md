@@ -1,0 +1,6 @@
+# hibernate-help
+hibernate 帮助类
+
+只需要将该包引入项目中，在自己的配置文件里配置一下自己的实体类包和DTO包，就可以愉快的使用baseDao 工具类愉快的查找了
+自动根据实体类或者dto的字段生成Selection,也可以根据我们传入的map 自动生成相应的Predicate 非常的方便了
+自己第一次用hibernate 所以写了一个小的帮助类，希望能够帮助到和我一样刚使用的人
