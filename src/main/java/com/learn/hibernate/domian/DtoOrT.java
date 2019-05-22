@@ -1,0 +1,17 @@
+package com.learn.hibernate.domian;
+
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class DtoOrT<DTO,T> {
+
+    List<DTO> dtoList;
+
+    List<T> tList;
+
+    T t;
+
+    DTO dto;
+}

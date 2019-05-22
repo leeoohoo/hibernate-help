@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration>
+	<property name="APP" value="hibernate" />	<!-- 服务模块名称 -->
+	<property name="LOG_HOME" value="/Users/lee/logs/${APP}" />	<!-- 当前磁盘根目录路径 -->
+	<!--配置控制台输出的格式-->
+	<appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>
+				%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %logger Line:%-3L - %m%n
+			</pattern>
+		</layout>
+	</appender>
+	<!--控制输出到文件的日志info-->
+	<appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--过滤ERROR日志-->
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>DENY</onMatch>
+			<onMismatch>ACCEPT</onMismatch>
+		</filter>
+		<encoder>
+			<pattern>
+				%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %logger Line:%-3L - %m%n
+			</pattern>
+			<charset>utf-8</charset>
+		</encoder>
+		<!--滚动策略-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!--路径-->
+			<fileNamePattern>${LOG_HOME}/info/log-info-%d{yyyy-MM-dd}.-%i.log</fileNamePattern>
+			<!-- 文件超过2M，将按索引转存 -->
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>2MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<!-- 追加方式记录日志 -->
+		<append>true</append>
+	</appender>
+
+	<!--控制输出到文件的日志error-->
+	<appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+		<encoder>
+			<pattern>
+				%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %logger Line:%-3L - %m%n
+			</pattern>
+			<charset>utf-8</charset>
+		</encoder>
+		<!--滚动策略-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!--路径-->
+			<fileNamePattern>${LOG_HOME}/error/log-error-%d{yyyy-MM-dd}.-%i.log</fileNamePattern>
+			<!-- 文件超过2M，将按索引转存 -->
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>2MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<!-- 追加方式记录日志 -->
+		<append>true</append>
+	</appender>
+	<!--控制日志输出的级别-->
+	<root level="info">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileInfoLog" />
+		<appender-ref ref="fileErrorLog" />
+	</root>
+
+</configuration>
