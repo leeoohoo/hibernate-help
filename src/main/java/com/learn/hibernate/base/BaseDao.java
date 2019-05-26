@@ -1,5 +1,7 @@
 package com.learn.hibernate.base;
 
+import com.learn.hibernate.annotation.Ignore;
+import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.JoinRoot;
 import com.learn.hibernate.domian.PageData;
@@ -11,30 +13,27 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
- * @author lee
  * @param <T>
  * @param <DTO>
  * @param <D>
+ * @author lee
  */
 @Data
 @AllArgsConstructor
-@Service
+@Component
 @PropertySource("classpath:my_base_dao.properties")
-public class BaseDao<T, DTO, D>  {
+public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
     private String entityString;
@@ -67,7 +66,7 @@ public class BaseDao<T, DTO, D>  {
     public BaseDao(Class<T> tClass, Class<DTO> dtoClass) {
         this.tClass = tClass;
         this.dtoClass = dtoClass;
-        getBQR();
+        initBQR();
     }
 
 
@@ -76,20 +75,49 @@ public class BaseDao<T, DTO, D>  {
 
     public void init(String clazz) throws ClassNotFoundException {
         String dtoName = clazz + dtoSuffix;
-        this.tClass = (Class<T>) Class.forName(this.entityString + clazz);
-        this.dtoClass = (Class<DTO>) Class.forName(this.dtoString + dtoName);
-        getBQR();
+        initTClz(clazz);
+        initDtoClz(dtoName);
+        initBQR();
     }
 
-    public void init(Class<T> entityClz, Class<DTO> dtoClz)  {
+    public void initTClz(String clazz) throws ClassNotFoundException {
+        var packagelist = Arrays.asList(this.entityString.split(","));
+        int count = 0;
+        for (String str : packagelist) {
+            try {
+                this.tClass = (Class<T>) Class.forName(str + "." + clazz);
+            } catch (ClassNotFoundException e) {
+                count++;
+                if (packagelist.size() <= count) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    public void initDtoClz(String dtoName) throws ClassNotFoundException {
+        int count = 0;
+        var packagelist = Arrays.asList(this.dtoString.split(","));
+        for (String str : packagelist) {
+            try {
+                this.dtoClass = (Class<DTO>) Class.forName(str + "." + dtoName);
+            } catch (ClassNotFoundException e) {
+                count++;
+                if (packagelist.size() <= count) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    public void init(Class<T> entityClz, Class<DTO> dtoClz) {
         this.tClass = entityClz;
         this.dtoClass = dtoClz;
-        getBQR();
+        initBQR();
     }
 
 
-
-    private void getBQR() {
+    private void initBQR() {
         this.cb = getSession().getCriteriaBuilder();
         this.cq = this.cb.createTupleQuery();
         this.root = this.cq.from(tClass);
@@ -100,16 +128,16 @@ public class BaseDao<T, DTO, D>  {
         return getSession().createQuery(cq);
     }
 
-    public D add(T t)  {
+    public D add(T t) {
         return (D) getSession().save(t);
     }
 
-    public T update(T t)  {
+    public T update(T t) {
         return (T) getSession().merge(t);
     }
 
     public T delete(D id, boolean isDeleted) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
-        T t = (T) getInfoDtoOrT(id,true).getT();
+        T t = (T) getInfoDtoOrT(id, true).getT();
         if (t == null) {
             return null;
         }
@@ -125,7 +153,7 @@ public class BaseDao<T, DTO, D>  {
         var list = Arrays.asList(ids);
 
         for (String id : list) {
-            var result = delete((D) id,false);
+            var result = delete((D) id, false);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -138,7 +166,7 @@ public class BaseDao<T, DTO, D>  {
     public boolean deleteByIsDeletedBach(String... ids) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
         var list = Arrays.asList(ids);
         for (String id : list) {
-            var result = delete((D) id,true);
+            var result = delete((D) id, true);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -154,8 +182,6 @@ public class BaseDao<T, DTO, D>  {
         }
         return t;
     }
-
-
 
 
     public DTO getInfoDto(D id, PageData pageData, String... fields) throws ClassNotFoundException {
@@ -220,7 +246,6 @@ public class BaseDao<T, DTO, D>  {
     }
 
     /**
-     *
      * @param pageData
      * @param isT
      * @return
@@ -245,7 +270,7 @@ public class BaseDao<T, DTO, D>  {
      * @return
      */
     public List<DTO> getDtoList(PageData pageData, String... fileds) throws ClassNotFoundException {
-        var query = getListQuery(pageData,false, fileds);
+        var query = getListQuery(pageData, false, fileds);
         List<Tuple> result = query.getResultList();
         return getDtoList(result);
     }
@@ -296,8 +321,6 @@ public class BaseDao<T, DTO, D>  {
         var query = getQuery();
         return query;
     }
-
-
 
 
     /**
@@ -392,20 +415,72 @@ public class BaseDao<T, DTO, D>  {
         cq.multiselect(selections);
     }
 
+    public Map<String, Boolean> getFildsName(Field[]... fields) {
+        Map<String, Boolean> fildsName = new HashMap<>();
+        if (fields.length <= 0) {
+            return fildsName;
+        }
+        var fieldss = Arrays.asList(fields);
+        fieldss.forEach(
+                fs -> {
+                    Arrays.asList(fs).forEach(
+                            f -> {
+                                var ignore = f.getAnnotation(Ignore.class);
+                                if (null == ignore) {
+                                    fildsName.put(f.getName(), getIsJoin(f));
+                                } else {
+                                    if (!ignore.value()) {
+                                        fildsName.put(f.getName(), getIsJoin(f));
+                                    }
+                                }
+
+                            }
+                    );
+                }
+        );
+
+        return fildsName;
+    }
+
+
+    /**
+     * 获取是否需要自动关联表
+     *
+     * @param field
+     * @return
+     */
+    private boolean getIsJoin(Field field) {
+        var noJoin = field.getAnnotation(Nojoin.class);
+        if (null == noJoin) {
+            return false;
+        } else {
+            return noJoin.value();
+        }
+    }
+
+    /**
+     * 初始化需要查询的字段
+     *
+     * @param isT
+     */
     public void selectFilds(boolean isT) {
         List<Selection> selections = new ArrayList<>();
         Field[] fields = null;
+        Map<String, Boolean> fildsNames = null;
         if (isT) {
-            fields = tClass.getDeclaredFields();
+            var childFields = tClass.getDeclaredFields();
+            var superTClassFields = tClass.getSuperclass().getDeclaredFields();
+            fildsNames = getFildsName(childFields, superTClassFields);
         } else {
             fields = dtoClass.getDeclaredFields();
+            fildsNames = getFildsName(fields);
         }
-        Arrays.asList(fields).forEach(
-                f -> {
+        fildsNames.forEach(
+                (k, v) -> {
                     Selection selection = null;
-                    var strs = getFildsUpChar(f.getName());
+                    var strs = getFildsUpChar(k, v);
                     if (strs.length == 1) {
-                        selection = this.root.get(f.getName()).alias(f.getName());
+                        selection = this.root.get(k).alias(k);
                         selections.add(selection);
                     } else {
                         selection = getSelection(strs);
@@ -417,8 +492,11 @@ public class BaseDao<T, DTO, D>  {
     }
 
 
-    public String[] getFildsUpChar(String str) {
+    public String[] getFildsUpChar(String str, Boolean ignore) {
         StringBuilder sb = new StringBuilder();
+        if (ignore) {
+            return str.split("\\.");
+        }
         char[] chars = str.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
@@ -428,9 +506,9 @@ public class BaseDao<T, DTO, D>  {
                 sb.append(String.valueOf(c));
             }
         }
-
         return sb.toString().split("\\.");
     }
+
 
     /**
      * 获取查询字断
@@ -508,12 +586,14 @@ public class BaseDao<T, DTO, D>  {
     }
 
 
-
     public List<Predicate> getPredicates(PageData pageData) throws ClassNotFoundException {
         List<Predicate> ps = new ArrayList<>();
 
-        for (Map.Entry entry : pageData.getMap().entrySet()){
+        for (Map.Entry entry : pageData.getMap().entrySet()) {
             var stes = entry.getKey().toString().split("_");
+            if (stes.length <= 1) {
+                continue;
+            }
             switch (stes[1]) {
                 case "like":
                     ps.add(getPredicateLike(stes[0], entry.getValue().toString()));
@@ -546,7 +626,7 @@ public class BaseDao<T, DTO, D>  {
     }
 
 
-    public Predicate getPredicateLike( String fildName, String value) throws ClassNotFoundException {
+    public Predicate getPredicateLike(String fildName, String value) throws ClassNotFoundException {
         var joinRoot = getRoot(fildName);
         return getCb().like(joinRoot.getRoot().get(joinRoot.getFiled()), value);
     }
@@ -593,13 +673,13 @@ public class BaseDao<T, DTO, D>  {
 
     public JoinRoot getRoot(String filedName) throws ClassNotFoundException {
         JoinRoot joinRoot = new JoinRoot();
-        if(filedName.contains(".")) {
+        if (filedName.contains(".")) {
             var strs = filedName.split("\\.");
             Class clz = Class.forName(this.entityString + strs[0]);
-            Root root = getCq().from( clz);
+            Root root = getCq().from(clz);
             joinRoot.setFiled(strs[1]);
             joinRoot.setRoot(root);
-        }else {
+        } else {
             joinRoot.setRoot(getRoot());
             joinRoot.setFiled(filedName);
         }
@@ -608,23 +688,23 @@ public class BaseDao<T, DTO, D>  {
 
 
     public String getAlisdName(String name) {
-        if(name.contains(".")) {
+        if (name.contains(".")) {
             StringBuilder stringBuilder = new StringBuilder();
             boolean flag = false;
             for (char b : name.toCharArray()) {
-                if(b == '.'){
+                if (b == '.') {
                     flag = true;
-                }else {
-                    if(flag){
+                } else {
+                    if (flag) {
                         stringBuilder.append(String.valueOf(b).toUpperCase());
                         flag = false;
-                    }else {
+                    } else {
                         stringBuilder.append(b);
                     }
                 }
             }
             return stringBuilder.toString();
-        }else {
+        } else {
             return name;
         }
     }
