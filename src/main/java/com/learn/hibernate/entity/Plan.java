@@ -1,5 +1,6 @@
 package com.learn.hibernate.entity;
 
+import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.common.entity.Project;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class Plan {
     @Column(length = 25)
     private String name;
 
+    @Nojoin
     private Long projectId;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)

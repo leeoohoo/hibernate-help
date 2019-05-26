@@ -101,7 +101,7 @@ public class BaseDao<T, DTO, D> {
         Class clz = null;
         for (String str : packagelist) {
             try {
-                clz = (Class<T>) Class.forName(str + "." + clazz);
+                clz = Class.forName(str + "." + clazz);
             } catch (ClassNotFoundException e) {
                 count++;
                 if (packagelist.size() <= count) {
