@@ -20,11 +20,8 @@ public class PlanService {
     public Object getList() throws ClassNotFoundException {
         baseDao.init("Plan");
         baseDao.getCb().equal(baseDao.getRoot().join("project").on(baseDao.getPredicateEq("name","11")).get("id"), null);
-        baseDao.setOrderBy("id,asc");
-        baseDao.getCq().groupBy(baseDao.getRoot().get("id"),
-                baseDao.getRoot().get("name"),
-                baseDao.getRoot().get("projectId"),
-                baseDao.getRoot().get("project").get("name"));
+        baseDao.setOrderBy("id,asc","project.name,desc");
+        baseDao.setGroupBy("id","project.name");
 
         var result = baseDao.getDtoOrTList(new PageData("project.name_eq",""),false);
         return result;

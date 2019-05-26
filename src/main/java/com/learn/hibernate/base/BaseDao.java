@@ -496,7 +496,11 @@ public class BaseDao<T, DTO, D> {
         cq.multiselect(selections);
     }
 
-    public void setOrderBy(String... fields) throws ClassNotFoundException {
+    /**
+     * 设置排序
+     * @param fields
+     */
+    public void setOrderBy(String... fields) {
         List<Order> orders = new ArrayList<>();
         if (fields.length > 0) {
             var fieldList = Arrays.asList(fields);
@@ -516,6 +520,17 @@ public class BaseDao<T, DTO, D> {
 
         }
         this.cq.orderBy(orders);
+    }
+
+    public void setGroupBy(String... fields) {
+        List<Path> paths = new ArrayList<>();
+        Arrays.asList(fields).forEach(
+                f -> {
+                    var p = getPath(f);
+                    paths.add(p);
+                }
+        );
+        this.cq.groupBy(paths);
     }
 
 
