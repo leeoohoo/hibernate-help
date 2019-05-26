@@ -1,5 +1,6 @@
 package com.learn.hibernate.Contraller;
 
+import com.learn.hibernate.Service.PlanService;
 import com.learn.hibernate.Service.ProjectService;
 import com.learn.hibernate.common.entity.Project;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,15 +14,17 @@ import java.util.List;
 public class ProjectContraller {
 
     private final ProjectService projectService;
+    private final PlanService planService;
 
-    public ProjectContraller(ProjectService projectService) {
+    public ProjectContraller(ProjectService projectService, PlanService planService) {
         this.projectService = projectService;
+        this.planService = planService;
     }
 
 
     @GetMapping("list")
-    public List<Project> list() throws ClassNotFoundException {
-        return projectService.getList();
+    public Object list() throws ClassNotFoundException {
+        return planService.getList();
     }
 
 }

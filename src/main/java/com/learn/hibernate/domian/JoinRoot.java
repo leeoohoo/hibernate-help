@@ -2,6 +2,7 @@ package com.learn.hibernate.domian;
 
 import lombok.Data;
 
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
 /**
@@ -10,7 +11,5 @@ import javax.persistence.criteria.Root;
 @Data
 public class JoinRoot {
 
-    Root root;
-
-    String filed;
+    Path path;
 }

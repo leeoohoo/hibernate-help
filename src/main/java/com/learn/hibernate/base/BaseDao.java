@@ -33,6 +33,7 @@ import java.util.*;
 @AllArgsConstructor
 @Component
 @PropertySource("classpath:my_base_dao.properties")
+@SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
@@ -93,6 +94,23 @@ public class BaseDao<T, DTO, D> {
                 }
             }
         }
+    }
+
+    public Class getMyClass(String clazz) throws ClassNotFoundException {
+        var packagelist = Arrays.asList(this.entityString.split(","));
+        int count = 0;
+        Class clz = null;
+        for (String str : packagelist) {
+            try {
+                clz = (Class<T>) Class.forName(str + "." + clazz);
+            } catch (ClassNotFoundException e) {
+                count++;
+                if (packagelist.size() <= count) {
+                    throw e;
+                }
+            }
+        }
+        return clz;
     }
 
     public void initDtoClz(String dtoName) throws ClassNotFoundException {
@@ -382,18 +400,6 @@ public class BaseDao<T, DTO, D> {
         return map;
     }
 
-    public List<Selection> getSelections(Root root) {
-        List<Selection> list = new ArrayList<>();
-        var dtoClz = getDtoClass();
-        var fields = dtoClz.getDeclaredFields();
-        Arrays.asList(fields).forEach(
-                f -> {
-                    System.out.println(f.getName());
-                    list.add(root.get(f.getName()).alias(f.getName()));
-                }
-        );
-        return list;
-    }
 
     /**
      * 初始化查询字断
@@ -491,6 +497,28 @@ public class BaseDao<T, DTO, D> {
         cq.multiselect(selections);
     }
 
+    public void setOrderBy(String... fields) throws ClassNotFoundException {
+        List<Order> orders = new ArrayList<>();
+        if (fields.length > 0) {
+            var fieldList = Arrays.asList(fields);
+            for (String str : fieldList) {
+                var strs = str.split(",");
+                if (strs.length > 1) {
+                    switch (strs[1]) {
+                        case "asc":
+                            orders.add(this.cb.asc(getPath(strs[0])));
+                            break;
+                        case "desc":
+                            orders.add(this.cb.desc(getPath(strs[0])));
+                            break;
+                    }
+                }
+            }
+
+        }
+        this.cq.orderBy(orders);
+    }
+
 
     public String[] getFildsUpChar(String str, Boolean ignore) {
         StringBuilder sb = new StringBuilder();
@@ -533,6 +561,27 @@ public class BaseDao<T, DTO, D> {
         }
         return null;
     }
+
+    public Path getPath(String... strings) {
+        switch (strings.length) {
+            case 1:
+                return this.root.get(strings[0]);
+            case 2:
+                return this.root.get(strings[0]).get(strings[1]);
+            case 3:
+                return this.root.get(strings[0]).get(strings[1]).get(strings[2]);
+            case 4:
+                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]);
+            case 5:
+                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]);
+            case 6:
+                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]);
+            case 7:
+                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]).get(strings[6]);
+        }
+        return null;
+    }
+
 
     public String getAlias(String... strings) {
         var alias = new StringBuilder();
@@ -626,65 +675,55 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public Predicate getPredicateLike(String fildName, String value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().like(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateLike(String fildName, String value)  {
+        return getCb().like(getPath(fildName), value);
     }
 
-    public Predicate getPredicateEq(String fildName, Object value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().equal(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateEq(String fildName, Object value)  {
+        return getCb().equal(getPath(fildName), value);
     }
 
-    public Predicate getPredicateGe(String fildName, Number value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().ge(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateGe(String fildName, Number value)  {
+        return getCb().ge(getPath(fildName), value);
     }
 
-    public Predicate getPredicateGt(String fildName, Number value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().gt(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateGt(String fildName, Number value)  {
+        return getCb().gt(getPath(fildName), value);
     }
 
-    public Predicate getPredicateLe(String fildName, Number value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().le(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateLe(String fildName, Number value)  {
+        return getCb().le(getPath(fildName), value);
     }
 
-    public Predicate getPredicateLt(String fildName, Number value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        return getCb().lt(joinRoot.getRoot().get(joinRoot.getFiled()), value);
+    public Predicate getPredicateLt(String fildName, Number value)  {
+        return getCb().lt(getPath(fildName), value);
     }
 
-    public Predicate getPredicateIn(String fildName, List value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        var in = getCb().in(joinRoot.getRoot().get(joinRoot.getFiled()));
+    public Predicate getPredicateIn(String fildName, List value)  {
+        var in = getCb().in(getPath());
         value.forEach(in::value);
         return in;
     }
 
-    public Predicate getPredicateNotIn(String fildName, List value) throws ClassNotFoundException {
-        var joinRoot = getRoot(fildName);
-        var in = getCb().in(joinRoot.getRoot().get(joinRoot.getFiled()));
+    public Predicate getPredicateNotIn(String fildName, List value) {
+        var in = getCb().in(getPath(fildName));
         value.forEach(in::value);
         var notIn = getCb().not(in);
         return notIn;
     }
 
-    public JoinRoot getRoot(String filedName) throws ClassNotFoundException {
-        JoinRoot joinRoot = new JoinRoot();
+    public Path getPath(String filedName)  {
+        Path path = null;
         if (filedName.contains(".")) {
             var strs = filedName.split("\\.");
-            Class clz = Class.forName(this.entityString + strs[0]);
-            Root root = getCq().from(clz);
-            joinRoot.setFiled(strs[1]);
-            joinRoot.setRoot(root);
+            path = getPath(strs);
         } else {
-            joinRoot.setRoot(getRoot());
-            joinRoot.setFiled(filedName);
+            var strs = filedName.split("\\.");
+            path = getPath(strs);
         }
-        return joinRoot;
+        return path;
     }
+
 
 
     public String getAlisdName(String name) {
