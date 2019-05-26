@@ -3,7 +3,6 @@ package com.learn.hibernate.base;
 import com.learn.hibernate.annotation.Ignore;
 import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
-import com.learn.hibernate.domian.JoinRoot;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
 import lombok.AllArgsConstructor;
