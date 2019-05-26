@@ -634,71 +634,72 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public List<Predicate> getPredicates(PageData pageData) throws ClassNotFoundException {
+    public List<Predicate> getPredicates(PageData pageData) {
         List<Predicate> ps = new ArrayList<>();
 
-        for (Map.Entry entry : pageData.getMap().entrySet()) {
-            var stes = entry.getKey().toString().split("_");
-            if (stes.length <= 1) {
-                continue;
-            }
-            switch (stes[1]) {
-                case "like":
-                    ps.add(getPredicateLike(stes[0], entry.getValue().toString()));
-                    break;
-                case "eq":
-                    ps.add(getPredicateEq(stes[0], entry.getValue()));
-                    break;
-                case "gt":
-                    ps.add(getPredicateGt(stes[0], (Number) entry.getValue()));
-                    break;
-                case "ge":
-                    ps.add(getPredicateGe(stes[0], (Number) entry.getValue()));
-                    break;
-                case "le":
-                    ps.add(getPredicateLe(stes[0], (Number) entry.getValue()));
-                    break;
-                case "lt":
-                    ps.add(getPredicateLt(stes[0], (Number) entry.getValue()));
-                    break;
-                case "in":
-                    ps.add(getPredicateIn(stes[0], (List) entry.getValue()));
-                    break;
-                case "notIn":
-                    ps.add(getPredicateNotIn(stes[0], (List) entry.getValue()));
-                    break;
-            }
-        }
+        pageData.getMap().forEach(
+                (k, v) -> {
+                    var stes = k.split("_");
+                    if (stes.length > 1) {
+                        switch (stes[1]) {
+                            case "like":
+                                ps.add(getPredicateLike(stes[0], v.toString()));
+                                break;
+                            case "eq":
+                                ps.add(getPredicateEq(stes[0], v));
+                                break;
+                            case "gt":
+                                ps.add(getPredicateGt(stes[0], (Number) v));
+                                break;
+                            case "ge":
+                                ps.add(getPredicateGe(stes[0], (Number) v));
+                                break;
+                            case "le":
+                                ps.add(getPredicateLe(stes[0], (Number) v));
+                                break;
+                            case "lt":
+                                ps.add(getPredicateLt(stes[0], (Number) v));
+                                break;
+                            case "in":
+                                ps.add(getPredicateIn(stes[0], (List) v));
+                                break;
+                            case "notIn":
+                                ps.add(getPredicateNotIn(stes[0], (List) v));
+                                break;
+                        }
+                    }
 
+                }
+        );
         return ps;
     }
 
 
-    public Predicate getPredicateLike(String fildName, String value)  {
+    public Predicate getPredicateLike(String fildName, String value) {
         return getCb().like(getPath(fildName), value);
     }
 
-    public Predicate getPredicateEq(String fildName, Object value)  {
+    public Predicate getPredicateEq(String fildName, Object value) {
         return getCb().equal(getPath(fildName), value);
     }
 
-    public Predicate getPredicateGe(String fildName, Number value)  {
+    public Predicate getPredicateGe(String fildName, Number value) {
         return getCb().ge(getPath(fildName), value);
     }
 
-    public Predicate getPredicateGt(String fildName, Number value)  {
+    public Predicate getPredicateGt(String fildName, Number value) {
         return getCb().gt(getPath(fildName), value);
     }
 
-    public Predicate getPredicateLe(String fildName, Number value)  {
+    public Predicate getPredicateLe(String fildName, Number value) {
         return getCb().le(getPath(fildName), value);
     }
 
-    public Predicate getPredicateLt(String fildName, Number value)  {
+    public Predicate getPredicateLt(String fildName, Number value) {
         return getCb().lt(getPath(fildName), value);
     }
 
-    public Predicate getPredicateIn(String fildName, List value)  {
+    public Predicate getPredicateIn(String fildName, List value) {
         var in = getCb().in(getPath());
         value.forEach(in::value);
         return in;
@@ -711,7 +712,7 @@ public class BaseDao<T, DTO, D> {
         return notIn;
     }
 
-    public Path getPath(String filedName)  {
+    public Path getPath(String filedName) {
         Path path = null;
         if (filedName.contains(".")) {
             var strs = filedName.split("\\.");
@@ -722,7 +723,6 @@ public class BaseDao<T, DTO, D> {
         }
         return path;
     }
-
 
 
     public String getAlisdName(String name) {
