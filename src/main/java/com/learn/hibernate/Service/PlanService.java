@@ -22,8 +22,7 @@ public class PlanService {
         baseDao.getCb().equal(baseDao.getRoot().join("project").on(baseDao.getPredicateEq("name","11")).get("id"), null);
         baseDao.setOrderBy("id,asc","project.name,desc");
         baseDao.setGroupBy("id","project.name");
-
-        var result = baseDao.getDtoOrTList(new PageData("project.name_eq",""),false);
+        var result = baseDao.getDtoOrTList(new PageData("project.name_eq","").add("id_eq",1),false);
         return result;
     }
 

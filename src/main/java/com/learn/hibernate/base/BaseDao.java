@@ -200,21 +200,31 @@ public class BaseDao<T, DTO, D> {
         return t;
     }
 
+    private PageData putId(D id, PageData pageData) {
+        PageData myPageData = new PageData();
+        myPageData.put("id_eq", id);
+        if (pageData != null) {
+            myPageData.putAll(pageData.getMap());
+        }
+        return myPageData;
+    }
 
     public DTO getInfoDto(D id, PageData pageData, String... fields) throws ClassNotFoundException {
-        var query = getInfoQuery(id, false, pageData, fields);
+        var query = getInfoQuery(false, putId(id,pageData), fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
 
     public DTO getInfoDto(D id, String... fields) throws ClassNotFoundException {
-        var query = getInfoQuery(id, false, null, fields);
+        var query = getInfoQuery(false, null, fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
 
+
+
     public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData) throws ClassNotFoundException {
-        var query = getInfoQuery(id, isT, pageData);
+        var query = getInfoQuery(isT, putId(id, pageData));
         Tuple result = (Tuple) query.getSingleResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
@@ -233,7 +243,7 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public DtoOrT getInfoDtoOrT(D id, boolean isT) throws ClassNotFoundException {
-        var query = getInfoQuery(id, isT, null);
+        var query = getInfoQuery(isT, null);
         Tuple result = (Tuple) query.getSingleResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
@@ -244,15 +254,11 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
-    public Query getInfoQuery(D id, boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
-        PageData myPageData = new PageData();
-        myPageData.put("id_eq", id);
-        if (pageData != null) {
-            myPageData.putAll(pageData.getMap());
+    public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
+        List<Predicate> list = getPredicates(pageData);
+        if(list.size() > 0) {
+            cq.where(list.toArray(Predicate[]::new));
         }
-        List<Predicate> list = getPredicates(myPageData);
-
-        cq.where(list.toArray(Predicate[]::new));
         if (fileds.length <= 0) {
             selectFilds(isT);
         } else {
@@ -522,6 +528,10 @@ public class BaseDao<T, DTO, D> {
         this.cq.orderBy(orders);
     }
 
+    /**
+     * 设置groupBy
+     * @param fields
+     */
     public void setGroupBy(String... fields) {
         List<Path> paths = new ArrayList<>();
         Arrays.asList(fields).forEach(
