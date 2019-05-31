@@ -148,6 +148,32 @@ public class BaseDao<T, DTO, D> {
         return result;
     }
 
+    public boolean addBach(List<T> list) {
+        if(null == list && list.size() < 0) {
+            return true;
+        }
+        try {
+            T t = null;
+            this.getBaseQuery().getSession().beginTransaction();
+            for (int i = 0; i < list.size(); i++) {
+                t = list.get(i);
+                this.baseQuery.getSession().saveOrUpdate(t);
+                if (i % 50 == 0) {
+                    this.getBaseQuery().getSession().flush();
+                    this.getBaseQuery().getSession().clear();
+                }
+            }
+            this.getBaseQuery().getSession().getTransaction().commit();
+            return true;
+        }catch (Exception e) {
+            e.printStackTrace(); // 打印错误信息
+            this.getBaseQuery().getSession().getTransaction().rollback();
+        }finally {
+            this.getBaseQuery().getSession().close();
+        }
+        return true;
+    }
+
     public Boolean updateById(T t,D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
         var result = this.baseQuery.asUpdate().set(t).where().eq("id",id).updateExecution();
         return result > 0;

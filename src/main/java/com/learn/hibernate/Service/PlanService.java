@@ -1,9 +1,7 @@
 package com.learn.hibernate.Service;
 
 import com.learn.hibernate.base.BaseDao;
-import com.learn.hibernate.base.BaseQuery;
 import com.learn.hibernate.domian.PageData;
-import com.learn.hibernate.entity.Plan;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +19,10 @@ public class PlanService {
 
     @Transactional
     public Object getList() throws ClassNotFoundException {
+
+        var list = baseDao.getDtoOrTList(new PageData("name_eq","sss").add("age_ge", 1),true).getTList();
+
+        var page = baseDao.getPageInfo(new PageData("name_eq","aaa"),false, "name","age","address,project.name");
        return null;
     }
 

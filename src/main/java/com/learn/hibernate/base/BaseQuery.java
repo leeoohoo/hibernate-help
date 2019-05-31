@@ -2,6 +2,7 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Data
 @Component
+@Slf4j
 public class BaseQuery<T> {
 
     @Autowired
@@ -48,6 +50,7 @@ public class BaseQuery<T> {
     public Integer updateExecution(){
         var updateSql = MyStringUtils.removeStringLastString(this.myQuery.getUpdateSql(), ",");
         var sql = updateSql + this.myQuery.getWhereSql();
+        log.info(sql);
         var q = this.session.createNativeQuery(sql);
         return q.executeUpdate();
     }
