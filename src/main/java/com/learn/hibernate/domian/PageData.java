@@ -23,7 +23,6 @@ public class PageData extends HashMap implements Map {
 	private Integer rows =10;
 	private Integer pageIndex = 1;
 	private Integer maxRows=0;
-	private PageData pageData;
 
 
 	Map map = null;
@@ -84,13 +83,17 @@ public class PageData extends HashMap implements Map {
 		map = new HashMap();
 	}
 	public PageData(String name, Object value) {
-		this.pageData = new PageData();
-		this.pageData.put(name, value);
+		this.map = new HashMap();
+		this.map.put(name, value);
 	}
 
 	public PageData add(String name, Object value) {
-		this.pageData.put(name,value);
-		return this.pageData;
+		this.map.put(name,value);
+		return this;
+	}
+
+	public PageData(Map<String, Object> map) {
+		this.map = map;
 	}
 
 	@Override

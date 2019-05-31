@@ -5,9 +5,9 @@ import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -46,6 +45,8 @@ public class BaseDao<T, DTO, D> {
 
     private Root joinRoot;
 
+    private String entityName;
+
     CriteriaBuilder cb;
 
     CriteriaQuery cq;
@@ -57,17 +58,9 @@ public class BaseDao<T, DTO, D> {
     Class<DTO> dtoClass;
 
     @Autowired
-    private EntityManager entityManager;
+    private BaseQuery baseQuery;
 
-    public Session getSession() {
-        return getEntityManager().unwrap(Session.class);
-    }
 
-    public BaseDao(Class<T> tClass, Class<DTO> dtoClass) {
-        this.tClass = tClass;
-        this.dtoClass = dtoClass;
-        initBQR();
-    }
 
 
     public BaseDao() {
@@ -75,8 +68,10 @@ public class BaseDao<T, DTO, D> {
 
     public void init(String clazz) throws ClassNotFoundException {
         String dtoName = clazz + dtoSuffix;
+        this.entityName = clazz;
         initTClz(clazz);
         initDtoClz(dtoName);
+        this.baseQuery = baseQuery.init(this.tClass);
         initBQR();
     }
 
@@ -128,49 +123,56 @@ public class BaseDao<T, DTO, D> {
     }
 
     public void init(Class<T> entityClz, Class<DTO> dtoClz) {
+        this.entityName = MyStringUtils.subStringLastChar(entityClz.getName(),'.');
         this.tClass = entityClz;
         this.dtoClass = dtoClz;
+        this.baseQuery = baseQuery.init(this.tClass);
         initBQR();
     }
 
 
     private void initBQR() {
-        this.cb = getSession().getCriteriaBuilder();
+        this.cb = this.baseQuery.getSession().getCriteriaBuilder();
         this.cq = this.cb.createTupleQuery();
         this.root = this.cq.from(tClass);
     }
 
 
     public Query getQuery() {
-        return getSession().createQuery(cq);
+        return this.baseQuery.getSession().createQuery(cq);
     }
 
     public D add(T t) {
-        return (D) getSession().save(t);
+        var result = (D) this.baseQuery.getSession().save(t);
+        this.baseQuery.getSession().clear();
+        return result;
     }
 
-    public T update(T t) {
-        return (T) getSession().merge(t);
+    public Boolean updateById(T t,D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
+        var result = this.baseQuery.asUpdate().set(t).where().eq("id",id).updateExecution();
+        return result > 0;
     }
 
-    public T delete(D id, boolean isDeleted) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
-        T t = (T) getInfoDtoOrT(id, true).getT();
-        if (t == null) {
-            return null;
-        }
+    public Integer delete(String where) {
+        var result = this.baseQuery.getSession().createQuery("delete "+entityName + where)
+                .executeUpdate();
+        return result;
+    }
+
+    public Integer deleteById(D id, boolean isDeleted)  {
         if (isDeleted) {
-            return deleteByIsDeleted(t);
+            return deleteByIsDeleted(id);
         }
-        getSession().delete(t);
-        return t;
+        var result = this.baseQuery.getSession().createQuery("delete "+entityName +" where id=?")
+                .setParameter(0,id).executeUpdate();
+        return result;
     }
 
     @Transactional
-    public boolean deleteBach(String... ids) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
+    public boolean deleteBach(String... ids)  {
         var list = Arrays.asList(ids);
-
         for (String id : list) {
-            var result = delete((D) id, false);
+            var result = deleteById((D) id, false);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -180,10 +182,10 @@ public class BaseDao<T, DTO, D> {
 
 
     @Transactional
-    public boolean deleteByIsDeletedBach(String... ids) throws IllegalAccessException, IntrospectionException, InvocationTargetException, ClassNotFoundException {
+    public boolean deleteByIsDeletedBach(String... ids)  {
         var list = Arrays.asList(ids);
         for (String id : list) {
-            var result = delete((D) id, true);
+            var result = deleteById((D) id, true);
             if (result == null) {
                 throw new RuntimeException();
             }
@@ -192,15 +194,11 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public T deleteByIsDeleted(T t) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        if (hasCloums(t, "isDeleted")) {
-            t = setProperty(t, "isDeleted", 1);
-            getSession().merge(t);
-        }
-        return t;
+    public Integer deleteByIsDeleted(D id)  {
+        return this.baseQuery.where().eq("id",id).asUpdate().set("isDelete", 1).updateExecution();
     }
 
-    private PageData putId(D id, PageData pageData) {
+    protected PageData putId(D id, PageData pageData) {
         PageData myPageData = new PageData();
         myPageData.put("id_eq", id);
         if (pageData != null) {
@@ -209,11 +207,13 @@ public class BaseDao<T, DTO, D> {
         return myPageData;
     }
 
+
     public DTO getInfoDto(D id, PageData pageData, String... fields) throws ClassNotFoundException {
         var query = getInfoQuery(false, putId(id,pageData), fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
+
 
     public DTO getInfoDto(D id, String... fields) throws ClassNotFoundException {
         var query = getInfoQuery(false, null, fields);
@@ -222,10 +222,14 @@ public class BaseDao<T, DTO, D> {
     }
 
 
+    public DTO getInfoDto(D id, String fields) throws ClassNotFoundException {
+        return getInfoDto(id,fields.split(","));
+    }
+
 
     public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData) throws ClassNotFoundException {
         var query = getInfoQuery(isT, putId(id, pageData));
-        Tuple result = (Tuple) query.getSingleResult();
+        Tuple result = (Tuple) query.uniqueResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
             dtoOrT.setT(getT(result));
@@ -243,7 +247,7 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public DtoOrT getInfoDtoOrT(D id, boolean isT) throws ClassNotFoundException {
-        var query = getInfoQuery(isT, null);
+        var query = getInfoQuery(isT, putId(id,null));
         Tuple result = (Tuple) query.getSingleResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
@@ -254,10 +258,12 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
+
+
     public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
         List<Predicate> list = getPredicates(pageData);
         if(list.size() > 0) {
-            cq.where(list.toArray(Predicate[]::new));
+            this.getCq().where(list.toArray(Predicate[]::new));
         }
         if (fileds.length <= 0) {
             selectFilds(isT);
@@ -306,8 +312,9 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public PageInfo getPageInfo(PageData pageData, boolean isT) throws ClassNotFoundException {
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
+
         var query = getListQuery(pageData, isT);
+        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
         query.setFirstResult(pageData.getMaxRows());
         query.setMaxResults(pageInfo.getPageSize());
         var result = getDtoList(query.getResultList());
@@ -332,7 +339,7 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public Query getListQuery(PageData pageData, boolean isT, String... fileds) throws ClassNotFoundException {
+    public Query getListQuery(PageData pageData, boolean isT, String... fileds)  {
         var p = getPredicates(pageData);
 
         cq.where(p.toArray(Predicate[]::new));
@@ -773,43 +780,6 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    /*该方法用于传入某实例对象以及对象方法名、修改值，通过放射调用该对象的某个set方法设置修改值*/
-    public T setProperty(T beanObj, String property, Object value) throws IntrospectionException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        //此处应该判断beanObj,property不为null
-        PropertyDescriptor pd = new PropertyDescriptor(property, beanObj.getClass());
-        Method setMethod = pd.getWriteMethod();
-        if (setMethod == null) {
-
-        }
-        assert setMethod != null;
-        return (T) setMethod.invoke(beanObj, value);
-    }
-
-    /*该方法用于传入某实例对象以及对象方法名，通过反射调用该对象的某个get方法*/
-    public Object getProperty(T beanObj, String property) throws IntrospectionException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        //此处应该判断beanObj,property不为null
-        PropertyDescriptor pd = new PropertyDescriptor(property, beanObj.getClass());
-        Method getMethod = pd.getReadMethod();
-        if (getMethod == null) {
-
-        }
-        assert getMethod != null;
-        return getMethod.invoke(beanObj);
-    }
-
-    //判断列是否存
-    public <T> boolean hasCloums(T beanObj, String property) {
-        try {
-            PropertyDescriptor pd = new PropertyDescriptor(property, beanObj.getClass());
-            Method getMethod = pd.getReadMethod();
-            if (getMethod == null) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
 
 }
