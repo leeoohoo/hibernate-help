@@ -694,7 +694,9 @@ public class BaseDao<T, DTO, D> {
 
     public List<Predicate> getPredicates(PageData pageData) {
         List<Predicate> ps = new ArrayList<>();
-
+        if(pageData == null) {
+            return ps;
+        }
         pageData.getMap().forEach(
                 (k, v) -> {
                     var stes = k.split("_");

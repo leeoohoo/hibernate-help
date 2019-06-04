@@ -1,15 +1,11 @@
 package com.learn.hibernate.Contraller;
 
+import com.learn.hibernate.Service.EmployeeService;
 import com.learn.hibernate.Service.PlanService;
 import com.learn.hibernate.Service.ProjectService;
-import com.learn.hibernate.common.entity.Project;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 @RestController
 @RequestMapping("project")
@@ -17,10 +13,12 @@ public class ProjectContraller {
 
     private final ProjectService projectService;
     private final PlanService planService;
+    private final EmployeeService employeeService;
 
-    public ProjectContraller(ProjectService projectService, PlanService planService) {
+    public ProjectContraller(ProjectService projectService, PlanService planService, EmployeeService employeeService) {
         this.projectService = projectService;
         this.planService = planService;
+        this.employeeService = employeeService;
     }
 
 
@@ -31,7 +29,7 @@ public class ProjectContraller {
 
     @GetMapping("save")
     public Object save() throws ClassNotFoundException {
-        return planService.save();
+        return employeeService.get();
     }
 //
 //    @GetMapping("delete")
