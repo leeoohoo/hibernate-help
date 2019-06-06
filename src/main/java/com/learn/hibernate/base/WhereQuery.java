@@ -8,10 +8,16 @@ import java.util.List;
 @Data
 public class WhereQuery extends BaseQuery {
 
+    private LDelete lDelete;
 
     public WhereQuery(MyQuery myQuery, Session session) {
         this.session = session;
         this.myQuery = myQuery;
+        this.myQuery.setWhereSql(new StringBuilder(" where 1 = 1"));
+    }
+
+    public WhereQuery(LDelete lDelete) {
+        this.lDelete = lDelete;
         this.myQuery.setWhereSql(new StringBuilder(" where 1 = 1"));
     }
 
@@ -175,15 +181,14 @@ public class WhereQuery extends BaseQuery {
         return this;
     }
 
-    public static void main(String[] args) {
-        StringBuilder sb = new StringBuilder("where 1 = 1");
-        String str = "where ";
-        sb = sb.replace(sb.lastIndexOf(str), sb.lastIndexOf(str)+str.length()," where (");
-        System.out.println(sb);
-    }
+
 
     public String toSql() {
         return this.getMyQuery().getWhereSql().toString();
+    }
+
+    public Integer deleteExecution() {
+        return this.lDelete.execution();
     }
 
 

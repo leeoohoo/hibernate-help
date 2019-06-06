@@ -1,6 +1,7 @@
 package com.learn.hibernate.base;
 
 
+import com.learn.hibernate.domian.PageData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

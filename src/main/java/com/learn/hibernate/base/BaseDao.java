@@ -61,8 +61,6 @@ public class BaseDao<T, DTO, D> {
     private BaseQuery baseQuery;
 
 
-
-
     public BaseDao() {
     }
 
@@ -70,6 +68,16 @@ public class BaseDao<T, DTO, D> {
         String dtoName = clazz + dtoSuffix;
         this.entityName = clazz;
         initTClz(clazz);
+        initDtoClz(dtoName);
+        this.baseQuery = baseQuery.init(this.tClass);
+        initBQR();
+    }
+
+    public void init(Class<T> clazz) throws ClassNotFoundException {
+        this.tClass = clazz;
+        var tableName = MyStringUtils.subStringLastChar(clazz.getName(), '.');
+        this.entityName = tableName;
+        String dtoName = tableName + dtoSuffix;
         initDtoClz(dtoName);
         this.baseQuery = baseQuery.init(this.tClass);
         initBQR();
@@ -123,7 +131,7 @@ public class BaseDao<T, DTO, D> {
     }
 
     public void init(Class<T> entityClz, Class<DTO> dtoClz) {
-        this.entityName = MyStringUtils.subStringLastChar(entityClz.getName(),'.');
+        this.entityName = MyStringUtils.subStringLastChar(entityClz.getName(), '.');
         this.tClass = entityClz;
         this.dtoClass = dtoClz;
         this.baseQuery = baseQuery.init(this.tClass);
@@ -149,7 +157,7 @@ public class BaseDao<T, DTO, D> {
     }
 
     public boolean addBach(List<T> list) {
-        if(null == list && list.size() < 0) {
+        if (null == list && list.size() < 0) {
             return true;
         }
         try {
@@ -165,37 +173,37 @@ public class BaseDao<T, DTO, D> {
             }
             this.getBaseQuery().getSession().getTransaction().commit();
             return true;
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(); // 打印错误信息
             this.getBaseQuery().getSession().getTransaction().rollback();
-        }finally {
+        } finally {
             this.getBaseQuery().getSession().close();
         }
         return true;
     }
 
-    public Boolean updateById(T t,D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        var result = this.baseQuery.asUpdate().set(t).where().eq("id",id).updateExecution();
+    public Boolean updateById(T t, D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
+        var result = this.baseQuery.asUpdate().set(t).where().eq("id", id).updateExecution();
         return result > 0;
     }
 
     public Integer delete(String where) {
-        var result = this.baseQuery.getSession().createQuery("delete "+entityName + where)
+        var result = this.baseQuery.getSession().createQuery("delete " + entityName + where)
                 .executeUpdate();
         return result;
     }
 
-    public Integer deleteById(D id, boolean isDeleted)  {
+    public Integer deleteById(D id, boolean isDeleted) {
         if (isDeleted) {
             return deleteByIsDeleted(id);
         }
-        var result = this.baseQuery.getSession().createQuery("delete "+entityName +" where id=?")
-                .setParameter(0,id).executeUpdate();
+        var result = this.baseQuery.getSession().createQuery("delete " + entityName + " where id=?")
+                .setParameter(0, id).executeUpdate();
         return result;
     }
 
     @Transactional
-    public boolean deleteBach(String... ids)  {
+    public boolean deleteBach(String... ids) {
         var list = Arrays.asList(ids);
         for (String id : list) {
             var result = deleteById((D) id, false);
@@ -208,7 +216,7 @@ public class BaseDao<T, DTO, D> {
 
 
     @Transactional
-    public boolean deleteByIsDeletedBach(String... ids)  {
+    public boolean deleteByIsDeletedBach(String... ids) {
         var list = Arrays.asList(ids);
         for (String id : list) {
             var result = deleteById((D) id, true);
@@ -220,8 +228,8 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public Integer deleteByIsDeleted(D id)  {
-        return this.baseQuery.where().eq("id",id).asUpdate().set("isDelete", 1).updateExecution();
+    public Integer deleteByIsDeleted(D id) {
+        return this.baseQuery.where().eq("id", id).asUpdate().set("isDelete", 1).updateExecution();
     }
 
     protected PageData putId(D id, PageData pageData) {
@@ -235,7 +243,7 @@ public class BaseDao<T, DTO, D> {
 
 
     public DTO getInfoDto(D id, PageData pageData, String... fields) throws ClassNotFoundException {
-        var query = getInfoQuery(false, putId(id,pageData), fields);
+        var query = getInfoQuery(false, putId(id, pageData), fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
@@ -249,7 +257,7 @@ public class BaseDao<T, DTO, D> {
 
 
     public DTO getInfoDto(D id, String fields) throws ClassNotFoundException {
-        return getInfoDto(id,fields.split(","));
+        return getInfoDto(id, fields.split(","));
     }
 
 
@@ -273,7 +281,7 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public DtoOrT getInfoDtoOrT(D id, boolean isT) throws ClassNotFoundException {
-        var query = getInfoQuery(isT, putId(id,null));
+        var query = getInfoQuery(isT, putId(id, null));
         Tuple result = (Tuple) query.getSingleResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
@@ -285,10 +293,9 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-
     public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
         List<Predicate> list = getPredicates(pageData);
-        if(list.size() > 0) {
+        if (list.size() > 0) {
             this.getCq().where(list.toArray(Predicate[]::new));
         }
         if (fileds.length <= 0) {
@@ -338,7 +345,6 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public PageInfo getPageInfo(PageData pageData, boolean isT) throws ClassNotFoundException {
-
         var query = getListQuery(pageData, isT);
         PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
         query.setFirstResult(pageData.getMaxRows());
@@ -356,8 +362,8 @@ public class BaseDao<T, DTO, D> {
      * @return
      */
     public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) throws ClassNotFoundException {
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
         var query = getListQuery(pageData, isT, fileds);
+        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
         query.setFirstResult(pageData.getMaxRows());
         query.setMaxResults(pageInfo.getPageSize());
         var result = getDtoList(query.getResultList());
@@ -365,11 +371,11 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public Query getListQuery(PageData pageData, boolean isT, String... fileds)  {
+    public Query getListQuery(PageData pageData, boolean isT, String... fileds) {
         var p = getPredicates(pageData);
 
         cq.where(p.toArray(Predicate[]::new));
-        if (fileds.length <= 0) {
+        if (fileds == null || fileds.length <= 0) {
             selectFilds(isT);
         } else {
             selectFilds(fileds);
@@ -429,6 +435,9 @@ public class BaseDao<T, DTO, D> {
      */
     public Map<String, Object> getResultMap(Tuple tuple) {
         Map<String, Object> map = new HashMap<>();
+        if(tuple == null) {
+            return map;
+        }
         for (int i = 0; i < tuple.getElements().size(); i++) {
             var object = tuple.getElements();
             var alias = object.get(i).getAlias();
@@ -537,6 +546,7 @@ public class BaseDao<T, DTO, D> {
 
     /**
      * 设置排序
+     *
      * @param fields
      */
     public void setOrderBy(String... fields) {
@@ -563,6 +573,7 @@ public class BaseDao<T, DTO, D> {
 
     /**
      * 设置groupBy
+     *
      * @param fields
      */
     public void setGroupBy(String... fields) {
@@ -694,7 +705,7 @@ public class BaseDao<T, DTO, D> {
 
     public List<Predicate> getPredicates(PageData pageData) {
         List<Predicate> ps = new ArrayList<>();
-        if(pageData == null) {
+        if (pageData == null) {
             return ps;
         }
         pageData.getMap().forEach(
@@ -806,8 +817,6 @@ public class BaseDao<T, DTO, D> {
             return name;
         }
     }
-
-
 
 
 }

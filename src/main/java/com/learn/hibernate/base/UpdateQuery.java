@@ -32,8 +32,7 @@ public class UpdateQuery<T> extends BaseQuery<T> {
     }
 
     public UpdateQuery set(String filed, Object value) {
-        StringBuilder sb = new StringBuilder();
-        this.myQuery.getUpdateSql().append(sb.toString());
+        set(new PageData(filed,value));
         return this;
     }
 

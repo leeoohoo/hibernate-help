@@ -43,6 +43,10 @@ public class BaseQuery<T> {
         return new WhereQuery(this.myQuery,this.session);
     }
 
+    public WhereQuery where(LDelete lDelete){
+        return new WhereQuery(lDelete);
+    }
+
     public UpdateQuery asUpdate(){
         return new UpdateQuery(this.myQuery,this.session);
     }
