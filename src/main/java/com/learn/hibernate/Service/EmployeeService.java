@@ -25,7 +25,8 @@ public class EmployeeService {
     public Object get() throws ClassNotFoundException {
         var a = lQuery
                 .find(Employee.class)
-                .fetchInner("organ","id")
+                .fetchLeft("organ","id")
+                .fetchInner("dempatment", "id")
                 .asDto()
                 .eq("id",1)
                 .findOne();
@@ -35,7 +36,13 @@ public class EmployeeService {
                 .eq("id",1)
                 .deleteExecution();
 
-        var c = lQuery.update(Employee.class).where().eq("name", "ssss").asUpdate().set("name","dffd").updateExecution();
+        var c = lQuery
+                .update(Employee.class)
+                .where()
+                .eq("name", "ssss")
+                .asUpdate()
+                .set("name","dffd")
+                .updateExecution();
 //
 //        baseDao.init("Employee");
 //        baseDao.getCb().equal(baseDao.getRoot().join("organ").get("id"),null);

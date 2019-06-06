@@ -25,6 +25,11 @@ public class LQuery {
         return new LSelect(this.baseDao);
     }
 
+    public LSelect find(Class clz, String sql) throws ClassNotFoundException {
+        this.baseDao.init(clz);
+        return new LSelect(this.baseDao);
+    }
+
     public LDelete delete(Class clz) throws ClassNotFoundException {
         this.baseDao.init(clz);
         return new LDelete(this.baseDao);
@@ -35,6 +40,8 @@ public class LQuery {
         this.baseDao.init(clz);
         return this.baseDao.getBaseQuery();
     }
+
+
 
 
 
