@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+
 @RestController
 @RequestMapping("project")
 public class ProjectContraller {
@@ -28,7 +31,7 @@ public class ProjectContraller {
     }
 
     @GetMapping("save")
-    public Object save() throws ClassNotFoundException {
+    public Object save() throws ClassNotFoundException, IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
         return employeeService.get();
     }
 //

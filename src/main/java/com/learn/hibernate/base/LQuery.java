@@ -25,9 +25,9 @@ public class LQuery {
         return new LSelect(this.baseDao);
     }
 
-    public LSelect find(Class clz, String sql) throws ClassNotFoundException {
+    public LCustomize customize(Class clz) throws ClassNotFoundException {
         this.baseDao.init(clz);
-        return new LSelect(this.baseDao);
+        return new LCustomize(this.baseDao);
     }
 
     public LDelete delete(Class clz) throws ClassNotFoundException {

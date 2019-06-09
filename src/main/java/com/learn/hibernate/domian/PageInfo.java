@@ -2,6 +2,7 @@ package com.learn.hibernate.domian;
 
 import com.learn.hibernate.base.MyBQR;
 import lombok.Data;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.Tuple;
@@ -27,25 +28,39 @@ public class PageInfo {
 
     private List list = new ArrayList();
 
-    public PageInfo(PageData pageData, MyBQR myBQR, Function<MyBQR, Query> function) {
+    public PageInfo(PageData pageData, MyBQR myBQR, Function<MyBQR, Query> function, boolean isGroup) {
         this.pageIndex = pageData.getPageIndex();
         this.pageSize = pageData.getRows();
         this.currentPage = pageData.getPageIndex();
         myBQR.getCq().multiselect(myBQR.getCb().count(myBQR.getRoot()));
         var query = function.apply(myBQR);
-        getCount(query);
+        getCount(query, isGroup);
     }
-    public PageInfo(){
+
+    public PageInfo(PageData pageData, NativeQuery query, boolean isGroup) {
+        this.pageIndex = pageData.getPageIndex();
+        this.pageSize = pageData.getRows();
+        this.currentPage = pageData.getPageIndex();
+        getCount(query, isGroup);
+    }
+
+    public PageInfo() {
 
     }
 
-    private void getCount(Query query) {
+    private void getCount(Query query, boolean isGroup) {
         List<Tuple> result = query.getResultList();
-        if(result == null || result.size() <= 0) {
+        if (result == null || result.size() <= 0) {
             this.count = 0;
+        } else {
+            var count = 0;
+            if (isGroup) {
+                count = result.size();
+            } else {
+                count = (int) result.get(0).get(0);
+            }
+            this.count = count;
         }
-        var count = result.get(0).get(0);
-        this.count = Integer.parseInt(count.toString());
         var pageTotal = 0;
         if (this.getCount() % this.getPageSize() > 0) {
             pageTotal = this.getCount() / this.getPageSize() + 1;
@@ -53,9 +68,29 @@ public class PageInfo {
             pageTotal = this.getCount() / this.getPageSize();
         }
         this.pageTotal = pageTotal;
-        System.out.println(count);
     }
 
+    private void getCount(NativeQuery query, boolean isGroup) {
+        List result = query.getResultList();
+        if (result == null || result.size() <= 0) {
+            this.count = 0;
+        } else {
+            var count = 0;
+            if (isGroup) {
+                count = result.size();
+            } else {
+                count = (int) result.get(0);
+            }
+            this.count = count;
+        }
+        var pageTotal = 0;
+        if (this.getCount() % this.getPageSize() > 0) {
+            pageTotal = this.getCount() / this.getPageSize() + 1;
+        } else {
+            pageTotal = this.getCount() / this.getPageSize();
+        }
+        this.pageTotal = pageTotal;
+    }
 
 
 }

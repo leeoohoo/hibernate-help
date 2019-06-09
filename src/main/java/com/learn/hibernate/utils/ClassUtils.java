@@ -5,6 +5,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,24 @@ public class ClassUtils {
 
         }
         assert setMethod != null;
+        return setMethod.invoke(beanObj, value);
+    }
+
+    /*该方法用于传入某实例对象以及对象方法名、修改值，通过放射调用该对象的某个set方法设置修改值*/
+    public static synchronized  <T> Object setProperty(T beanObj, String property, Object value, Class clazz) throws IntrospectionException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        //此处应该判断beanObj,property不为null
+        PropertyDescriptor pd = new PropertyDescriptor(property, beanObj.getClass());
+        Method setMethod = pd.getWriteMethod();
+        if (setMethod == null) {
+
+        }
+        assert setMethod != null;
+        if(clazz.getName().contains("Long")) {
+            value = Long.parseLong(value.toString());
+        }else if(clazz.getName().contains("BigInteger")) {
+            value = BigInteger.valueOf((Long) value);
+        }
+
         return setMethod.invoke(beanObj, value);
     }
 

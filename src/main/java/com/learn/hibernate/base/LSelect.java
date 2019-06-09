@@ -50,6 +50,16 @@ public class LSelect {
     }
 
 
+    public LSelect order(String... fileds) {
+        this.baseDao.setOrderBy(fileds);
+        return this;
+    }
+    public LSelect groupBy(String fileds) {
+        this.baseDao.setGroupBy(fileds.split(","));
+        return this;
+    }
+
+
     public LSelect fetchLeft(String tableName, String joinId) {
         this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.LEFT).get(joinId),null);
         return this;
@@ -70,6 +80,7 @@ public class LSelect {
         this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.RIGHT).on(predicates.toArray(Predicate[]::new)).get(joinId),null);
         return this;
     }
+
 //-----------------------------------------------------------join------------------------------------------------------
 
     public Object findOne() throws ClassNotFoundException {
@@ -99,7 +110,15 @@ public class LSelect {
     }
 
 
+
+
     //------------------------------------------------------------where-------------------------------------------------------
+
+   public LSelect where(PageData pageData) {
+        this.pageData.putAll(pageData);
+        return this;
+   }
+
     public LSelect eq(String filed, Object value) {
         this.pageData.put(filed+"_eq", value);
         return this;

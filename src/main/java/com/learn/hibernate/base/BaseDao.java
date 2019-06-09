@@ -51,6 +51,8 @@ public class BaseDao<T, DTO, D> {
 
     CriteriaQuery cq;
 
+    boolean isGroup;
+
     Root root;
 
     Class<T> tClass;
@@ -346,7 +348,7 @@ public class BaseDao<T, DTO, D> {
      */
     public PageInfo getPageInfo(PageData pageData, boolean isT) throws ClassNotFoundException {
         var query = getListQuery(pageData, isT);
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
+        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
         query.setFirstResult(pageData.getMaxRows());
         query.setMaxResults(pageInfo.getPageSize());
         var result = getDtoList(query.getResultList());
@@ -363,10 +365,11 @@ public class BaseDao<T, DTO, D> {
      */
     public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) throws ClassNotFoundException {
         var query = getListQuery(pageData, isT, fileds);
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery());
+        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
         query.setFirstResult(pageData.getMaxRows());
         query.setMaxResults(pageInfo.getPageSize());
         var result = getDtoList(query.getResultList());
+        pageInfo.setList(result);
         return pageInfo;
     }
 
@@ -435,7 +438,7 @@ public class BaseDao<T, DTO, D> {
      */
     public Map<String, Object> getResultMap(Tuple tuple) {
         Map<String, Object> map = new HashMap<>();
-        if(tuple == null) {
+        if (tuple == null) {
             return map;
         }
         for (int i = 0; i < tuple.getElements().size(); i++) {
@@ -585,6 +588,7 @@ public class BaseDao<T, DTO, D> {
                 }
         );
         this.cq.groupBy(paths);
+        this.isGroup = true;
     }
 
 
@@ -714,28 +718,51 @@ public class BaseDao<T, DTO, D> {
                     if (stes.length > 1) {
                         switch (stes[1]) {
                             case "like":
-                                ps.add(getPredicateLike(stes[0], v.toString()));
+                                if (v != null && "".equals(v.toString().trim())) {
+                                    ps.add(getPredicateLike(stes[0], v.toString()));
+                                }
                                 break;
                             case "eq":
-                                ps.add(getPredicateEq(stes[0], v));
+                                if (v != null) {
+                                    ps.add(getPredicateEq(stes[0], v));
+                                }
                                 break;
                             case "gt":
-                                ps.add(getPredicateGt(stes[0], (Number) v));
+                                if (v != null) {
+                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                }
                                 break;
                             case "ge":
-                                ps.add(getPredicateGe(stes[0], (Number) v));
+                                if (v != null) {
+                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                }
                                 break;
                             case "le":
-                                ps.add(getPredicateLe(stes[0], (Number) v));
+                                if (v != null) {
+                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                }
                                 break;
                             case "lt":
-                                ps.add(getPredicateLt(stes[0], (Number) v));
+                                if (v != null) {
+                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                }
                                 break;
                             case "in":
-                                ps.add(getPredicateIn(stes[0], (List) v));
+                                if (v != null) {
+                                    var list = (List) v;
+                                    if (list.size() > 0) {
+                                        ps.add(getPredicateIn(stes[0], (List) v));
+                                    }
+                                }
+
                                 break;
                             case "notIn":
-                                ps.add(getPredicateNotIn(stes[0], (List) v));
+                                if (v != null) {
+                                    var list = (List) v;
+                                    if (list.size() > 0) {
+                                        ps.add(getPredicateIn(stes[0], (List) v));
+                                    }
+                                }
                                 break;
                         }
                     }

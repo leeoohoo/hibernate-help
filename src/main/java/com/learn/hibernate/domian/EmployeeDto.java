@@ -2,6 +2,8 @@ package com.learn.hibernate.domian;
 
 import lombok.Data;
 
+import java.math.BigInteger;
+
 @Data
 public class EmployeeDto {
 
