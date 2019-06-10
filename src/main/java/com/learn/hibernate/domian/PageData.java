@@ -21,7 +21,7 @@ public class PageData extends HashMap implements Map {
 	private static final long serialVersionUID = 1L;
 
 	private Integer rows =10;
-	private Integer pageIndex = 1;
+	private Integer pageIndex = 0;
 	private Integer maxRows=0;
 
 

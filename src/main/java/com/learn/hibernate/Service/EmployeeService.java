@@ -46,12 +46,12 @@ public class EmployeeService {
 //
 //
 //
-        var b = lQuery
-                .delete(Employee.class)
-                .where()
-                .eq("id",1)
-                .in("id",new ArrayList<>())
-                .deleteExecution();
+//        var b = lQuery
+//                .delete(Employee.class)
+//                .where()
+//                .eq("id",1)
+//                .in("id",new ArrayList<>())
+//                .deleteExecution();
 //
 //        var c = lQuery
 //                .update(Employee.class)
@@ -67,13 +67,14 @@ public class EmployeeService {
 ////        var result = baseDao.getDtoOrTList(new PageData(), true);
 ////        return result;
 //
-//        var d = lQuery.customize(Employee.class)
-//                .find("select e.id, e.name, o.name, d.name from employee e " +
-//                        " left join organ o on o.id = e.organ_id" +
-//                        " left join organ d on o.id = e.dempartment_id")
+        var d = lQuery.customize(Employee.class)
+                .find("select e.id, e.name, o.name, d.name from employee e " +
+                        " left join organ o on o.id = e.organ_id" +
+                        " left join organ d on d.id = e.dempartment_id")
 //                .asMap()
 //                .asMapping("id,name,organName,dempartmentName")
-//                .findPage();
+                .asDTO()
+                .findPage();
 
 
 
@@ -85,6 +86,6 @@ public class EmployeeService {
 
 
 
-        return b;
+        return d;
     }
 }
