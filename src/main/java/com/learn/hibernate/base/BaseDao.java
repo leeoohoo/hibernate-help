@@ -801,7 +801,7 @@ public class BaseDao<T, DTO, D> {
     }
 
     public Predicate getPredicateIn(String fildName, List value) {
-        var in = getCb().in(getPath());
+        var in = getCb().in(getPath(fildName));
         value.forEach(in::value);
         return in;
     }
