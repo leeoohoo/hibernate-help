@@ -58,7 +58,8 @@ public class PageInfo {
             if (isGroup) {
                 count = result.size();
             } else {
-                count = (int) result.get(0).get(0);
+                var r = result.get(0).get(0);
+                count = Integer.parseInt(r.toString());
             }
             this.count = count;
         }
