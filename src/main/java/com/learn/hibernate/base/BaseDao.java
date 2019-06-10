@@ -8,6 +8,7 @@ import com.learn.hibernate.domian.PageInfo;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,7 @@ import java.util.*;
 @Component
 @PropertySource("classpath:my_base_dao.properties")
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
+@Slf4j
 public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
@@ -92,10 +94,7 @@ public class BaseDao<T, DTO, D> {
             try {
                 this.tClass = (Class<T>) Class.forName(str + "." + clazz);
             } catch (ClassNotFoundException e) {
-                count++;
-                if (packagelist.size() <= count) {
-                    throw e;
-                }
+                log.error("-----------------------------------------------"+clazz + "未找到相应的dto类");
             }
         }
     }
@@ -427,6 +426,9 @@ public class BaseDao<T, DTO, D> {
     }
 
     public DTO getDto(Tuple tuple) {
+        if(null == this.dtoClass){
+            throw new RuntimeException("未找到相应的dto");
+        }
         return (DTO) map2Obj(getResultMap(tuple), dtoClass);
     }
 
