@@ -62,6 +62,9 @@ public class BaseDao<T, DTO, D> {
 
     Class<DTO> dtoClass;
 
+
+    private PageData orPageData;
+
     @Autowired
     private BaseQuery baseQuery;
 
@@ -95,7 +98,7 @@ public class BaseDao<T, DTO, D> {
             try {
                 this.tClass = (Class<T>) Class.forName(str + "." + clazz);
             } catch (ClassNotFoundException e) {
-                log.error("-----------------------------------------------"+clazz + "未找到相应的dto类");
+                log.error("-----------------------------------------------" + clazz + "未找到相应的dto类");
             }
         }
     }
@@ -294,11 +297,20 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
+    private Predicate[] getPredicateArray(PageData pageData) {
+        List<Predicate> list = getPredicates(pageData);
+        if (this.orPageData != null && this.orPageData.size() > 0) {
+            var orPredicates = getPredicates(this.orPageData);
+            list.add(this.cb.or(orPredicates.toArray(Predicate[]::new)));
+        }
+        return list.toArray(Predicate[]::new);
+    }
 
     public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
-        List<Predicate> list = getPredicates(pageData);
-        if (list.size() > 0) {
-            this.getCq().where(list.toArray(Predicate[]::new));
+        Predicate[] predicates = getPredicateArray(pageData);
+
+        if (predicates.length > 0) {
+            this.getCq().where(predicates);
         }
         if (fileds.length <= 0) {
             selectFilds(isT);
@@ -375,9 +387,10 @@ public class BaseDao<T, DTO, D> {
 
 
     public Query getListQuery(PageData pageData, boolean isT, String... fileds) {
-        var p = getPredicates(pageData);
-
-        cq.where(p.toArray(Predicate[]::new));
+        var p = getPredicateArray(pageData);
+        if(null != p && p.length >0){
+            cq.where(p);
+        }
         if (fileds == null || fileds.length <= 0) {
             selectFilds(isT);
         } else {
@@ -427,7 +440,7 @@ public class BaseDao<T, DTO, D> {
     }
 
     public DTO getDto(Tuple tuple) {
-        if(null == this.dtoClass){
+        if (null == this.dtoClass) {
             throw new RuntimeException("未找到相应的dto");
         }
         return (DTO) map2Obj(getResultMap(tuple), dtoClass);
@@ -767,6 +780,7 @@ public class BaseDao<T, DTO, D> {
                                     }
                                 }
                                 break;
+
                         }
                     }
 
@@ -783,6 +797,7 @@ public class BaseDao<T, DTO, D> {
     public Predicate getPredicateEq(String fildName, Object value) {
         return getCb().equal(getPath(fildName), value);
     }
+
 
     public Predicate getPredicateGe(String fildName, Number value) {
         return getCb().ge(getPath(fildName), value);
@@ -847,9 +862,6 @@ public class BaseDao<T, DTO, D> {
             return name;
         }
     }
-
-
-
 
 
 }

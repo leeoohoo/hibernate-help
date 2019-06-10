@@ -26,14 +26,16 @@ public class EmployeeService {
 
     @Transactional
     public Object get() throws ClassNotFoundException, InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
-//        var a = lQuery
-//                .find(Employee.class)
-//                .fetchRight("organ","id")
-//                .fetchLeft("dempatment", "id")
-//                .asDto()
-//                .groupBy("id")
-//                .order("name,asc","id,desc")
-//                .findPage();
+        var d = lQuery
+                .find(Employee.class)
+                .fetchLeft("organ","id")
+                .fetchLeft("dempatment", "id")
+                .eq("name","ddd")
+                .or(new PageData("name_eq","ddd").add("id_eq",1L))
+                .asDto()
+                .groupBy("id")
+                .order("name,asc","id,desc")
+                .findPage();
 //
 //
 //        lQuery.find(Employee.class)
@@ -76,11 +78,11 @@ public class EmployeeService {
 
 
 
-        Employee employee = new Employee();
-        employee.setName("dfsfdsf000");
-        employee.setDempartmentId(3L);
-        employee.setOrganId(4L);
-        var d = lQuery.save(employee);
+//        Employee employee = new Employee();
+//        employee.setName("dfsfdsf000");
+//        employee.setDempartmentId(3L);
+//        employee.setOrganId(4L);
+//        var d = lQuery.save(employee);
 
 
 

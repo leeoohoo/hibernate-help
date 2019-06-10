@@ -21,6 +21,7 @@ public class LSelect {
     private String[] fileds;
 
 
+
     public LSelect(BaseDao baseDao) {
         this.baseDao = baseDao;
         this.pageData = new PageData();
@@ -161,6 +162,11 @@ public class LSelect {
 
     public LSelect notIn(String filed, List value) {
         this.pageData.put(filed+"_notIn", value);
+        return this;
+    }
+
+    public LSelect or(PageData pageData){
+        this.baseDao.setOrPageData(pageData);
         return this;
     }
 
