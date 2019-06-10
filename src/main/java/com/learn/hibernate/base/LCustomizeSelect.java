@@ -137,6 +137,8 @@ public class LCustomizeSelect {
             if(o instanceof Object[]) {
                 var result = getResult((Object[])o);
                 resultList.add(result);
+            }else {
+                resultList.add(o);
             }
         }
         return resultList;
