@@ -13,12 +13,21 @@ import java.util.List;
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Data
 @Component
-public class LQuery {
+public class LQuery<T> {
 
     @Autowired
     private  BaseDao baseDao;
 
 
+    public Object save(T t) {
+        this.baseDao.getBaseQuery().initSession();
+        return this.baseDao.add(t);
+    }
+
+    public boolean saveAll(List<T> ts) {
+        this.baseDao.getBaseQuery().initSession();
+        return this.baseDao.addBach(ts);
+    }
 
     public LSelect find(Class clz) throws ClassNotFoundException {
         this.baseDao.init(clz);
