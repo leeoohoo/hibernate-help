@@ -8,6 +8,7 @@ public class LDelete {
     private  BaseDao baseDao;
 
 
+
     public LDelete(BaseDao baseDao) {
         this.baseDao = baseDao;
     }
@@ -18,8 +19,8 @@ public class LDelete {
     }
 
 
-    public Integer execution() {
-        var sql = this.baseDao.getBaseQuery().where().toSql();
+    public Integer execution(WhereQuery whereQuery) {
+        var sql = whereQuery.toSql();
         return this.baseDao.delete(sql);
     }
 

@@ -22,9 +22,11 @@ public class WhereQuery extends BaseQuery {
     }
 
     public WhereQuery in(String field, List<Object> list) {
-        this.myQuery.getWhereSql().append(" and " + field + " in (");
-        this.myQuery.getWhereSql().append(getInValue(list));
-        this.myQuery.getWhereSql().append(")");
+        if (null != list && list.size() > 0) {
+            this.myQuery.getWhereSql().append(" and " + field + " in (");
+            this.myQuery.getWhereSql().append(getInValue(list));
+            this.myQuery.getWhereSql().append(")");
+        }
         return this;
     }
 
@@ -43,9 +45,11 @@ public class WhereQuery extends BaseQuery {
     }
 
     public WhereQuery notIn(String field, List<Object> list) {
-        this.myQuery.getWhereSql().append(" and " + field + " not in(");
-        this.myQuery.getWhereSql().append(getInValue(list));
-        this.myQuery.getWhereSql().append(")");
+        if(null != list && list.size() > 0) {
+            this.myQuery.getWhereSql().append(" and " + field + " not in(");
+            this.myQuery.getWhereSql().append(getInValue(list));
+            this.myQuery.getWhereSql().append(")");
+        }
         return this;
     }
 
@@ -86,44 +90,44 @@ public class WhereQuery extends BaseQuery {
         return this;
     }
 
-    public WhereQuery orEq(String field, Object value){
+    public WhereQuery orEq(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " = '");
+        this.myQuery.getWhereSql().append(" or " + field + " = '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
-    public WhereQuery orLt(String field, Object value){
+    public WhereQuery orLt(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " < '");
+        this.myQuery.getWhereSql().append(" or " + field + " < '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
-    public WhereQuery orLe(String field, Object value){
+    public WhereQuery orLe(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " <= '");
+        this.myQuery.getWhereSql().append(" or " + field + " <= '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
-    public WhereQuery orGt(String field, Object value){
+    public WhereQuery orGt(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " > '");
+        this.myQuery.getWhereSql().append(" or " + field + " > '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
-    public WhereQuery orGe(String field, Object value){
+    public WhereQuery orGe(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " >= '");
+        this.myQuery.getWhereSql().append(" or " + field + " >= '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
-    public WhereQuery orLike(String field, Object value){
+    public WhereQuery orLike(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or "+ field + " like '%");
+        this.myQuery.getWhereSql().append(" or " + field + " like '%");
         this.myQuery.getWhereSql().append(value + "%')");
         return this;
     }
@@ -170,17 +174,16 @@ public class WhereQuery extends BaseQuery {
     private WhereQuery or() {
         StringBuilder sb = this.getMyQuery().getWhereSql();
 
-        if(sb.indexOf("and")>0){
+        if (sb.indexOf("and") > 0) {
             String str = "and ";
-            sb = sb.replace(sb.lastIndexOf(str), sb.lastIndexOf(str)+str.length(),"and (");
-        }else {
+            sb = sb.replace(sb.lastIndexOf(str), sb.lastIndexOf(str) + str.length(), "and (");
+        } else {
             String str = "where ";
-            sb = sb.replace(sb.lastIndexOf(str), sb.lastIndexOf(str)+str.length()," where (");
+            sb = sb.replace(sb.lastIndexOf(str), sb.lastIndexOf(str) + str.length(), " where (");
         }
         this.getMyQuery().setWhereSql(sb);
         return this;
     }
-
 
 
     public String toSql() {
@@ -188,7 +191,7 @@ public class WhereQuery extends BaseQuery {
     }
 
     public Integer deleteExecution() {
-        return this.lDelete.execution();
+        return this.lDelete.execution(this);
     }
 
 
