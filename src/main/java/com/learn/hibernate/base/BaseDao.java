@@ -721,7 +721,7 @@ public class BaseDao<T, DTO, D> {
                     if (stes.length > 1) {
                         switch (stes[1]) {
                             case "like":
-                                if (v != null && "".equals(v.toString().trim())) {
+                                if (v != null && !"".equals(v.toString().trim())) {
                                     ps.add(getPredicateLike(stes[0], v.toString()));
                                 }
                                 break;
