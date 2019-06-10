@@ -6,6 +6,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.Tuple;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -79,7 +80,12 @@ public class PageInfo {
             if (isGroup) {
                 count = result.size();
             } else {
-                count = (int) result.get(0);
+                var r = result.get(0);
+                if(r instanceof BigInteger) {
+                    count = ((BigInteger) r).intValue();
+                }else {
+                    count = 0;
+                }
             }
             this.count = count;
         }
