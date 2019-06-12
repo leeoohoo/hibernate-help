@@ -98,7 +98,10 @@ public class BaseDao<T, DTO, D> {
             try {
                 this.tClass = (Class<T>) Class.forName(str + "." + clazz);
             } catch (ClassNotFoundException e) {
-                log.error("-----------------------------------------------" + clazz + "未找到相应的dto类");
+                count++;
+                if (packagelist.size() <= count) {
+                    throw e;
+                }
             }
         }
     }
@@ -127,10 +130,7 @@ public class BaseDao<T, DTO, D> {
             try {
                 this.dtoClass = (Class<DTO>) Class.forName(str + "." + dtoName);
             } catch (ClassNotFoundException e) {
-                count++;
-                if (packagelist.size() <= count) {
-                    throw e;
-                }
+                log.error("-----------------------------------------------" + dtoName + "未找到相应的dto类");
             }
         }
     }

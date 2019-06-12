@@ -2,6 +2,7 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.utils.ClassUtils;
 import lombok.Data;
 
 import javax.persistence.criteria.JoinType;
@@ -34,6 +35,12 @@ public class LSelect {
     }
 
     public LSelect asDto() {
+        this.isT = false;
+        return this;
+    }
+
+    public LSelect asDto(Class clazz) {
+        this.baseDao.setDtoClass(clazz);
         this.isT = false;
         return this;
     }
@@ -96,7 +103,7 @@ public class LSelect {
         }
     }
 
-    public Object findList() throws ClassNotFoundException {
+    public List findList() throws ClassNotFoundException {
         var result = this.baseDao.getDtoOrTList(this.pageData,this.isT);
         if(this.isT) {
             return result.getTList();
