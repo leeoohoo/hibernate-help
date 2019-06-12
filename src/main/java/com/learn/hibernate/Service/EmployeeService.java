@@ -4,6 +4,8 @@ import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.common.entity.Employee;
 import com.learn.hibernate.domian.PageData;
+import com.learn.hibernate.entity.Action;
+import com.learn.hibernate.entity.RoleAction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,16 +69,17 @@ public class EmployeeService {
 ////        var result = baseDao.getDtoOrTList(new PageData(), true);
 ////        return result;
 //
-        var d = lQuery.customize(Employee.class)
-                .find("select e.id, e.name, o.name, d.name from employee e " +
-                        " left join organ o on o.id = e.organ_id" +
-                        " left join organ d on d.id = e.dempartment_id")
-//                .asMap()
-//                .asMapping("id,name,organName,dempartmentName")
-                .asDTO()
-                .findPage();
+//        var d = lQuery.customize(Employee.class)
+//                .find("select e.id, e.name, o.name, d.name from employee e " +
+//                        " left join organ o on o.id = e.organ_id" +
+//                        " left join organ d on d.id = e.dempartment_id")
+////                .asMap()
+////                .asMapping("id,name,organName,dempartmentName")
+//                .asDTO()
+//                .findPage();
 
 
+//        var d = lQuery.find(RoleAction.class).findList();
 
 //        Employee employee = new Employee();
 //        employee.setName("dfsfdsf000");
@@ -84,7 +87,12 @@ public class EmployeeService {
 //        employee.setOrganId(4L);
 //        var d = lQuery.save(employee);
 
-
+        Action action = new Action();
+        action.setCode("ddd");
+        action.setDescription("eeee");
+        action.setName("ddd");
+        action.setMenuId("ddddd");
+        var d = lQuery.save(action);
 
         return d;
     }

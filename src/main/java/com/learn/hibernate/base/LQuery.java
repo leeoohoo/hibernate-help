@@ -21,6 +21,7 @@ public class LQuery<T> {
 
     public Object save(T t) {
         this.baseDao.getBaseQuery().initSession();
+        this.baseDao.setTClass(t.getClass());
         return this.baseDao.add(t);
     }
 

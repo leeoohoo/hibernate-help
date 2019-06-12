@@ -10,6 +10,7 @@ import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -156,8 +157,10 @@ public class BaseDao<T, DTO, D> {
     }
 
     public D add(T t) {
-        var result = (D) this.baseQuery.getSession().save(t);
-        this.baseQuery.getSession().clear();
+        Session session = this.baseQuery.getSession();
+        var result = (D) session.save(t);
+        session.flush();
+        session.clear();
         return result;
     }
 
