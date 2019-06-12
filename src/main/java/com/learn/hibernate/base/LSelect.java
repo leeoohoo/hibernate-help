@@ -45,6 +45,13 @@ public class LSelect {
         return this;
     }
 
+    public LSelect setPage(PageData pageData) {
+        PageData p = pageData;
+        p.putAll(this.pageData);
+        this.pageData = p;
+        return this;
+    }
+
     //-----------------------------------------------------------join------------------------------------------------------
 
     public LSelect fetchInner(String tableName, String joinId) {
