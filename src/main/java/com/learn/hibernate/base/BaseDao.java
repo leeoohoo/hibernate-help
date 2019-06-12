@@ -342,6 +342,18 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
+    public DtoOrT getDtoOrTList(PageData pageData, boolean isT,String... fileds) throws ClassNotFoundException {
+        var query = getListQuery(pageData, isT,fileds);
+        List<Tuple> result = query.getResultList();
+        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
+        if (isT) {
+            dtoOrT.setTList(getList(result));
+        } else {
+            dtoOrT.setDtoList(getDtoList(result));
+        }
+        return dtoOrT;
+    }
+
     /**
      * 获取DTO列表
      *

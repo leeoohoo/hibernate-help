@@ -36,5 +36,9 @@ public class Role  {
     @Ignore
     private List<RoleMenu> roleMenus;
 
+    @OneToOne
+    @JoinColumn(name = "id",referencedColumnName = "roleId",insertable = false,updatable = false)
+    private UserRole userRole;
+
 
 }

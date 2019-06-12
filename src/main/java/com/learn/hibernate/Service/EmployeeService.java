@@ -9,6 +9,7 @@ import com.learn.hibernate.entity.RoleAction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.JoinType;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -86,13 +87,22 @@ public class EmployeeService {
 //        employee.setDempartmentId(3L);
 //        employee.setOrganId(4L);
 //        var d = lQuery.save(employee);
+//
+//        Action action = new Action();
+//        action.setCode("ddd");
+//        action.setDescription("eeee");
+//        action.setName("ddd");
+//        action.setMenuId("ddddd");
+//        var d = lQuery.save(action);
 
-        Action action = new Action();
-        action.setCode("ddd");
-        action.setDescription("eeee");
-        action.setName("ddd");
-        action.setMenuId("ddddd");
-        var d = lQuery.save(action);
+
+        var d = lQuery.find(RoleAction.class)
+                .join("role", JoinType.LEFT)
+                .followUp("userRole",JoinType.INNER)
+                .fetch()
+                .select("id")
+                .findList();
+
 
         return d;
     }

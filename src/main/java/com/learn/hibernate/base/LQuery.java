@@ -1,13 +1,9 @@
 package com.learn.hibernate.base;
 
-import com.learn.hibernate.domian.PageData;
-import com.learn.hibernate.domian.PageInfo;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
 import java.util.List;
 
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})

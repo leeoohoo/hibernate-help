@@ -2,10 +2,12 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.eunms.JoinWay;
 import com.learn.hibernate.utils.ClassUtils;
 import lombok.Data;
 
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import java.util.List;
 
@@ -20,6 +22,8 @@ public class LSelect {
     private boolean isT;
 
     private String[] fileds;
+
+    private Path path;
 
 
 
@@ -54,16 +58,32 @@ public class LSelect {
 
     //-----------------------------------------------------------join------------------------------------------------------
 
+
+    public LJoin join(String tableName,JoinType joinType) {
+        return new LJoin(tableName,joinType,this);
+    }
+
     public LSelect fetchInner(String tableName, String joinId) {
         this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.INNER).get(joinId),null);
         return this;
     }
+
+
+
     public LSelect fetchInner(String tableName, String joinId,PageData pageData) {
         List<Predicate> predicates = this.baseDao.getPredicates(pageData);
         this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.INNER).on(predicates.toArray(Predicate[]::new)).get(joinId),null);
         return this;
     }
 
+    private Path getPath(String tableName,Integer joinWay) {
+        if(tableName.contains(".")) {
+
+        }else {
+
+        }
+        return null;
+    }
 
     public LSelect order(String... fileds) {
         this.baseDao.setOrderBy(fileds);
@@ -111,7 +131,7 @@ public class LSelect {
     }
 
     public List findList() throws ClassNotFoundException {
-        var result = this.baseDao.getDtoOrTList(this.pageData,this.isT);
+        var result = this.baseDao.getDtoOrTList(this.pageData,this.isT,this.fileds);
         if(this.isT) {
             return result.getTList();
         }else {
