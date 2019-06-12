@@ -28,7 +28,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Object get() throws ClassNotFoundException, InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
+    public Object get() throws ClassNotFoundException {
 //        var d = lQuery
 //                .find(Employee.class)
 //                .fetchLeft("organ","id")
