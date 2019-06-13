@@ -99,6 +99,7 @@ public class EmployeeService {
         var d = lQuery.find(RoleAction.class)
                 .join("role", JoinType.LEFT)
                 .followUp("userRole",JoinType.INNER)
+                .justJoin("test",JoinType.INNER)
                 .fetch()
                 .select("id")
                 .findList();
