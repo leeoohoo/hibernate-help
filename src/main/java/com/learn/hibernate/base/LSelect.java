@@ -76,14 +76,7 @@ public class LSelect {
         return this;
     }
 
-    private Path getPath(String tableName,Integer joinWay) {
-        if(tableName.contains(".")) {
-
-        }else {
-
-        }
-        return null;
-    }
+   
 
     public LSelect order(String... fileds) {
         this.baseDao.setOrderBy(fileds);
