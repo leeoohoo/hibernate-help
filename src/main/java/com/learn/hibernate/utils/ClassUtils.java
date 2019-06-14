@@ -1,5 +1,7 @@
 package com.learn.hibernate.utils;
 
+import com.learn.hibernate.annotation.Ignore;
+import com.learn.hibernate.domian.Action;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.beans.IntrospectionException;
@@ -8,8 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ClassUtils {
 
@@ -83,21 +84,37 @@ public class ClassUtils {
         Map<String, Object> map = new HashMap<>();
         var childFields = t.getClass().getDeclaredFields();
         var superTClassFields = t.getClass().getSuperclass().getDeclaredFields();
-        Field[] fields = null;
-        if(null == superTClassFields && superTClassFields.length<0){
-            fields = childFields;
-        }else {
-            fields  = ArrayUtils.addAll(childFields,superTClassFields);
-
-        }
-        for(Field field : fields) {
-            String str = field.getName();
-            var value = ClassUtils.getProperty(t,str);
+        List<String> fields = getFildsName(childFields,superTClassFields);
+        for(String filed : fields) {
+            var value = ClassUtils.getProperty(t,filed);
             if(value != null) {
-                map.put(str,value);
+                map.put(filed,value);
             }
         }
         return map;
+    }
+
+    public static List<String> getFildsName(Field[]... fields) {
+        List<String> fildsName = new ArrayList<>();
+        if (fields.length <= 0) {
+            return fildsName;
+        }
+        var fieldss = Arrays.asList(fields);
+        fieldss.forEach(
+                fs -> {
+                    Arrays.asList(fs).forEach(
+                            f -> {
+                                fildsName.add(f.getName());
+                            }
+                    );
+                }
+        );
+
+        return fildsName;
+    }
+
+    public static void main(String[] args) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
+        ClassUtils.tToMap(new Action());
     }
 
 
