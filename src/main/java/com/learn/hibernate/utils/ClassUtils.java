@@ -1,8 +1,5 @@
 package com.learn.hibernate.utils;
 
-import com.learn.hibernate.annotation.Ignore;
-import com.learn.hibernate.domian.Action;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -113,9 +110,7 @@ public class ClassUtils {
         return fildsName;
     }
 
-    public static void main(String[] args) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        ClassUtils.tToMap(new Action());
-    }
+
 
 
 }
