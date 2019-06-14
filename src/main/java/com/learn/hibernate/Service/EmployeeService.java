@@ -106,6 +106,7 @@ public class EmployeeService {
 
         Action action = new Action();
         action.setMenuId("2");
+        action.setId("1");
         var d = lQuery.update(Action.class)
                 .where()
                 .eq("id","1")

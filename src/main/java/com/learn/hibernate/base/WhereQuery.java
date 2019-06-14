@@ -1,5 +1,6 @@
 package com.learn.hibernate.base;
 
+import com.learn.hibernate.utils.MyStringUtils;
 import lombok.Data;
 import org.hibernate.Session;
 
@@ -23,7 +24,7 @@ public class WhereQuery extends BaseQuery {
 
     public WhereQuery in(String field, List<Object> list) {
         if (null != list && list.size() > 0) {
-            this.myQuery.getWhereSql().append(" and " + field + " in (");
+            this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " in (");
             this.myQuery.getWhereSql().append(getInValue(list));
             this.myQuery.getWhereSql().append(")");
         }
@@ -31,14 +32,14 @@ public class WhereQuery extends BaseQuery {
     }
 
     public WhereQuery in(String field, String selectSql) {
-        this.myQuery.getWhereSql().append(" and " + field + " in (");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " in (");
         this.myQuery.getWhereSql().append(selectSql);
         this.myQuery.getWhereSql().append(")");
         return this;
     }
 
     public WhereQuery notIn(String field, String selectSql) {
-        this.myQuery.getWhereSql().append(" and " + field + " not in (");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " not in (");
         this.myQuery.getWhereSql().append(selectSql);
         this.myQuery.getWhereSql().append(")");
         return this;
@@ -46,7 +47,7 @@ public class WhereQuery extends BaseQuery {
 
     public WhereQuery notIn(String field, List<Object> list) {
         if(null != list && list.size() > 0) {
-            this.myQuery.getWhereSql().append(" and " + field + " not in(");
+            this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " not in(");
             this.myQuery.getWhereSql().append(getInValue(list));
             this.myQuery.getWhereSql().append(")");
         }
@@ -54,87 +55,87 @@ public class WhereQuery extends BaseQuery {
     }
 
     public WhereQuery eq(String field, Object value) {
-        this.myQuery.getWhereSql().append(" and " + field + " = '");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field) + " = '");
         this.myQuery.getWhereSql().append(value + "'");
         return this;
     }
 
     public WhereQuery lt(String field, Number value) {
-        this.myQuery.getWhereSql().append(" and " + field + " < ");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " < ");
         this.myQuery.getWhereSql().append(value);
         return this;
     }
 
 
     public WhereQuery le(String field, Number value) {
-        this.myQuery.getWhereSql().append(" and " + field + " <= ");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " <= ");
         this.myQuery.getWhereSql().append(value);
         return this;
     }
 
     public WhereQuery gt(String field, Number value) {
-        this.myQuery.getWhereSql().append(" and " + field + " > ");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " > ");
         this.myQuery.getWhereSql().append(value);
         return this;
     }
 
     public WhereQuery ge(String field, Number value) {
-        this.myQuery.getWhereSql().append(" and " + field + " >= ");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " >= ");
         this.myQuery.getWhereSql().append(value);
         return this;
     }
 
     public WhereQuery like(String field, String value) {
-        this.myQuery.getWhereSql().append(" and " + field + " like '%");
+        this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " like '%");
         this.myQuery.getWhereSql().append(value + "%'");
         return this;
     }
 
     public WhereQuery orEq(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " = '");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " = '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
     public WhereQuery orLt(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " < '");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " < '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
     public WhereQuery orLe(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " <= '");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " <= '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
     public WhereQuery orGt(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " > '");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " > '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
     public WhereQuery orGe(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " >= '");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " >= '");
         this.myQuery.getWhereSql().append(value + "')");
         return this;
     }
 
     public WhereQuery orLike(String field, Object value) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " like '%");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " like '%");
         this.myQuery.getWhereSql().append(value + "%')");
         return this;
     }
 
     public WhereQuery orIn(String field, List list) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " in (");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " in (");
         this.myQuery.getWhereSql().append(getInValue(list));
         this.myQuery.getWhereSql().append("))");
         return this;
@@ -142,7 +143,7 @@ public class WhereQuery extends BaseQuery {
 
     public WhereQuery orIn(String field, String selectSql) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " in (");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " in (");
         this.myQuery.getWhereSql().append(selectSql);
         this.myQuery.getWhereSql().append("))");
         return this;
@@ -150,7 +151,7 @@ public class WhereQuery extends BaseQuery {
 
     public WhereQuery orNotIn(String field, List list) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " not in (");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " not in (");
         this.myQuery.getWhereSql().append(getInValue(list));
         this.myQuery.getWhereSql().append("))");
         return this;
@@ -158,7 +159,7 @@ public class WhereQuery extends BaseQuery {
 
     public WhereQuery orNotIn(String field, String selectSql) {
         or();
-        this.myQuery.getWhereSql().append(" or " + field + " not in (");
+        this.myQuery.getWhereSql().append(" or " + MyStringUtils.getSqlWord(field)  + " not in (");
         this.myQuery.getWhereSql().append(selectSql);
         this.myQuery.getWhereSql().append("))");
         return this;
