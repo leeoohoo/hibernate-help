@@ -22,7 +22,7 @@ public class WhereQuery extends BaseQuery {
         this.myQuery.setWhereSql(new StringBuilder(" where 1 = 1"));
     }
 
-    public WhereQuery in(String field, List<Object> list) {
+    public WhereQuery in(String field, List list) {
         if (null != list && list.size() > 0) {
             this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " in (");
             this.myQuery.getWhereSql().append(getInValue(list));
@@ -45,7 +45,7 @@ public class WhereQuery extends BaseQuery {
         return this;
     }
 
-    public WhereQuery notIn(String field, List<Object> list) {
+    public WhereQuery notIn(String field, List list) {
         if(null != list && list.size() > 0) {
             this.myQuery.getWhereSql().append(" and " + MyStringUtils.getSqlWord(field)  + " not in(");
             this.myQuery.getWhereSql().append(getInValue(list));
