@@ -2,6 +2,7 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.utils.ClassUtils;
+import com.learn.hibernate.utils.MyStringUtils;
 import lombok.Data;
 import org.hibernate.Session;
 
@@ -24,7 +25,7 @@ public class UpdateQuery<T> extends BaseQuery<T> {
         StringBuilder sb = new StringBuilder();
         pageData.getMap().forEach(
                 (k, v) -> {
-                    sb.append(k + " = '" + v + "',");
+                    sb.append(MyStringUtils.getSqlWord(k) + " = '" + v + "',");
                 }
         );
         this.myQuery.getUpdateSql().append(sb.toString());

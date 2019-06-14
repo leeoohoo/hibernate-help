@@ -28,7 +28,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Object get() throws ClassNotFoundException {
+    public Object get() throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException {
 //        var d = lQuery
 //                .find(Employee.class)
 //                .fetchLeft("organ","id")
@@ -96,13 +96,22 @@ public class EmployeeService {
 //        var d = lQuery.save(action);
 
 
-        var d = lQuery.find(RoleAction.class)
-                .join("role", JoinType.LEFT)
-                .followUp("userRole",JoinType.INNER)
-                .justJoin("test",JoinType.INNER)
-                .fetch()
-                .select("id")
-                .findList();
+//        var d = lQuery.find(RoleAction.class)
+//                .join("role", JoinType.LEFT)
+//                .followUp("userRole",JoinType.INNER)
+//                .justJoin("test",JoinType.INNER)
+//                .fetch()
+//                .select("id")
+//                .findList();
+
+        Action action = new Action();
+        action.setMenuId("2");
+        var d = lQuery.update(Action.class)
+                .where()
+                .eq("id","1")
+                .asUpdate()
+                .set(action)
+                .updateExecution();
 
 
         return d;
