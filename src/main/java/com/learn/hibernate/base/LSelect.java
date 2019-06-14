@@ -76,7 +76,7 @@ public class LSelect {
         return this;
     }
 
-   
+
 
     public LSelect order(String... fileds) {
         this.baseDao.setOrderBy(fileds);

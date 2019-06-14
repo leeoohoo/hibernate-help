@@ -132,7 +132,7 @@ public class WhereQuery extends BaseQuery {
         return this;
     }
 
-    public WhereQuery orIn(String field, List<Object> list) {
+    public WhereQuery orIn(String field, List list) {
         or();
         this.myQuery.getWhereSql().append(" or " + field + " in (");
         this.myQuery.getWhereSql().append(getInValue(list));
@@ -148,7 +148,7 @@ public class WhereQuery extends BaseQuery {
         return this;
     }
 
-    public WhereQuery orNotIn(String field, List<Object> list) {
+    public WhereQuery orNotIn(String field, List list) {
         or();
         this.myQuery.getWhereSql().append(" or " + field + " not in (");
         this.myQuery.getWhereSql().append(getInValue(list));
