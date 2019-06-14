@@ -2,8 +2,6 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
-import com.learn.hibernate.eunms.JoinWay;
-import com.learn.hibernate.utils.ClassUtils;
 import lombok.Data;
 
 import javax.persistence.criteria.JoinType;

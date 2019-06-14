@@ -1,5 +1,7 @@
 package com.learn.hibernate.utils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -79,7 +81,15 @@ public class ClassUtils {
      */
     public static synchronized Map<String, Object> tToMap(Object t) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
         Map<String, Object> map = new HashMap<>();
-        var fields = t.getClass().getDeclaredFields();
+        var childFields = t.getClass().getDeclaredFields();
+        var superTClassFields = t.getClass().getSuperclass().getDeclaredFields();
+        Field[] fields = null;
+        if(null == superTClassFields && superTClassFields.length<0){
+            fields = childFields;
+        }else {
+            fields  = ArrayUtils.addAll(childFields,superTClassFields);
+
+        }
         for(Field field : fields) {
             String str = field.getName();
             var value = ClassUtils.getProperty(t,str);
