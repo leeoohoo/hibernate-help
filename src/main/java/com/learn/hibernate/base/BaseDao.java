@@ -749,17 +749,7 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public static void main(String[] args) {
-        Action action = new Action();
-        var a = action.getClass().getFields();
 
-        String[] str = new String[]{"ddd","fff"};
-        String[] str1 = new String[]{"GGG","dddde"};
-        List<String> b = Arrays.asList(str);
-        List<String> c = Arrays.asList(str1);
-        b.addAll(c);
-        System.out.println(b);
-    }
 
 
     public List<Predicate> getPredicates(PageData pageData) {
