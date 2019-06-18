@@ -20,7 +20,7 @@ public class Action  {
     @Id
     @GeneratedValue(generator = "jpa-uuid")
     @Column(length = 36)
-    private String id;
+    public String id;
 
     @Column(length = 25, nullable = false)
     private String name;

@@ -5,6 +5,7 @@ import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.entity.Action;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -721,7 +722,19 @@ public class BaseDao<T, DTO, D> {
             e.printStackTrace();
         }
         Field[] declaredFields = obj.getClass().getDeclaredFields();
-        for (Field field : declaredFields) {
+        Field[] superFields = obj.getClass().getSuperclass().getDeclaredFields();
+        if(null != declaredFields && declaredFields.length > 0) {
+            setFiledValue(map,obj,declaredFields);
+        }
+        if(null != superFields && superFields.length > 0) {
+            setFiledValue(map,obj,superFields);
+        }
+
+        return obj;
+    }
+
+    private void setFiledValue(Map<String, Object> map,Object obj, Field[] fields) {
+        for (Field field : fields) {
             int mod = field.getModifiers();
             if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
                 continue;
@@ -733,7 +746,19 @@ public class BaseDao<T, DTO, D> {
                 e.printStackTrace();
             }
         }
-        return obj;
+    }
+
+
+    public static void main(String[] args) {
+        Action action = new Action();
+        var a = action.getClass().getFields();
+
+        String[] str = new String[]{"ddd","fff"};
+        String[] str1 = new String[]{"GGG","dddde"};
+        List<String> b = Arrays.asList(str);
+        List<String> c = Arrays.asList(str1);
+        b.addAll(c);
+        System.out.println(b);
     }
 
 

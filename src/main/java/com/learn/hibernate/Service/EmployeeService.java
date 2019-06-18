@@ -28,86 +28,86 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Object get() throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException {
-//        var d = lQuery
-//                .find(Employee.class)
-//                .fetchLeft("organ","id")
-//                .fetchLeft("dempatment", "id")
-//                .eq("name","ddd")
-//                .or(new PageData("name_eq","ddd").add("id_eq",1L))
-//                .asDto()
-//                .groupBy("id")
-//                .order("name,asc","id,desc")
-//                .findPage();
-//
-//
-//        lQuery.find(Employee.class)
-//                .asDto()
-//                .where(new PageData())
-//                .eq("organ.path","ddd")
-//                .findList();
-//
-//
-//
-//        var b = lQuery
-//                .delete(Employee.class)
-//                .where()
-//                .eq("id",1)
-//                .in("id",new ArrayList<>())
-//                .deleteExecution();
-//
-//        var c = lQuery
-//                .update(Employee.class)
-//                .where()
-//                .eq("name", "ssss")
-//                .asUpdate()
-//                .set("name","dffd")
-//                .set(new PageData())
-//                .updateExecution();
-//
-////        baseDao.init("Employee");
-////        baseDao.getCb().equal(baseDao.getRoot().join("organ").get("id"),null);
-////        var result = baseDao.getDtoOrTList(new PageData(), true);
-////        return result;
-//
-//        var d = lQuery.customize(Employee.class)
-//                .find("select e.id, e.name, o.name, d.name from employee e " +
-//                        " left join organ o on o.id = e.organ_id" +
-//                        " left join organ d on d.id = e.dempartment_id")
-////                .asMap()
-////                .asMapping("id,name,organName,dempartmentName")
-//                .asDTO()
-//                .findPage();
+    public Object get() throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
+        var d = lQuery
+                .find(Employee.class)
+                .fetchLeft("organ","id")
+                .fetchLeft("dempatment", "id")
+                .eq("name","ddd")
+                .or(new PageData("name_eq","ddd").add("id_eq",1L))
+                .asDto()
+                .groupBy("id")
+                .order("name,asc","id,desc")
+                .findPage();
 
 
-//        var d = lQuery.find(RoleAction.class).findList();
-
-//        Employee employee = new Employee();
-//        employee.setName("dfsfdsf000");
-//        employee.setDempartmentId(3L);
-//        employee.setOrganId(4L);
-//        var d = lQuery.save(employee);
-//
-//        Action action = new Action();
-//        action.setCode("ddd");
-//        action.setDescription("eeee");
-//        action.setName("ddd");
-//        action.setMenuId("ddddd");
-//        var d = lQuery.save(action);
+        lQuery.find(Employee.class)
+                .asDto()
+                .where(new PageData())
+                .eq("organ.path","ddd")
+                .findList();
 
 
-//        var d = lQuery.find(RoleAction.class)
-//                .join("role", JoinType.LEFT)
-//                .followUp("userRole",JoinType.INNER)
-//                .justJoin("test",JoinType.INNER)
-//                .fetch()
-//                .select("id")
-//                .findList();
+
+        var b = lQuery
+                .delete(Employee.class)
+                .where()
+                .eq("id",1)
+                .in("id",new ArrayList<>())
+                .deleteExecution();
+
+        var c = lQuery
+                .update(Employee.class)
+                .where()
+                .eq("name", "ssss")
+                .asUpdate()
+                .set("name","dffd")
+                .set(new PageData())
+                .updateExecution();
+
+//        baseDao.init("Employee");
+//        baseDao.getCb().equal(baseDao.getRoot().join("organ").get("id"),null);
+//        var result = baseDao.getDtoOrTList(new PageData(), true);
+//        return result;
+
+        var t = lQuery.customize(Employee.class)
+                .find("select e.id, e.name, o.name, d.name from employee e " +
+                        " left join organ o on o.id = e.organ_id" +
+                        " left join organ d on d.id = e.dempartment_id")
+//                .asMap()
+//                .asMapping("id,name,organName,dempartmentName")
+                .asDTO()
+                .findPage();
+
+
+        var l = lQuery.find(RoleAction.class).findList();
+
+        Employee employee = new Employee();
+        employee.setName("dfsfdsf000");
+        employee.setDempartmentId(3L);
+        employee.setOrganId(4L);
+        var f = lQuery.save(employee);
 
         Action action = new Action();
+        action.setCode("ddd");
+        action.setDescription("eeee");
+        action.setName("ddd");
+        action.setMenuId("ddddd");
+        var g = lQuery.save(action);
+
+
+        var h = lQuery.find(RoleAction.class)
+                .join("role", JoinType.LEFT)
+                .followUp("userRole",JoinType.INNER)
+                .justJoin("test",JoinType.INNER)
+                .fetch()
+                .select("id")
+                .findList();
+
+//        Action action = new Action();
         action.setMenuId("2");
         action.setId("1");
-        var d = lQuery.update(Action.class)
+        var j = lQuery.update(Action.class)
                 .where()
                 .eq("id","1")
                 .asUpdate()
