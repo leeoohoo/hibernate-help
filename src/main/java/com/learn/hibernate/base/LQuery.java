@@ -26,23 +26,23 @@ public class LQuery<T> {
         return this.baseDao.addBach(ts);
     }
 
-    public LSelect find(Class clz) throws ClassNotFoundException {
+    public LSelect find(Class clz) {
         this.baseDao.init(clz);
         return new LSelect(this.baseDao);
     }
 
-    public LCustomize customize(Class clz) throws ClassNotFoundException {
+    public LCustomize customize(Class clz)  {
         this.baseDao.init(clz);
         return new LCustomize(this.baseDao);
     }
 
-    public LDelete delete(Class clz) throws ClassNotFoundException {
+    public LDelete delete(Class clz)  {
         this.baseDao.init(clz);
         return new LDelete(this.baseDao);
     }
 
 
-    public BaseQuery update(Class clz) throws ClassNotFoundException {
+    public BaseQuery update(Class clz) {
         this.baseDao.init(clz);
         return this.baseDao.getBaseQuery();
     }

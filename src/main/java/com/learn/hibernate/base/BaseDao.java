@@ -5,7 +5,6 @@ import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
-import com.learn.hibernate.entity.Action;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -82,7 +81,7 @@ public class BaseDao<T, DTO, D> {
         initBQR();
     }
 
-    public void init(Class<T> clazz) throws ClassNotFoundException {
+    public void init(Class<T> clazz) {
         this.tClass = clazz;
         var tableName = MyStringUtils.subStringLastChar(clazz.getName(), '.');
         this.entityName = tableName;
@@ -124,7 +123,7 @@ public class BaseDao<T, DTO, D> {
         return clz;
     }
 
-    public void initDtoClz(String dtoName) throws ClassNotFoundException {
+    public void initDtoClz(String dtoName) {
         int count = 0;
         var packagelist = Arrays.asList(this.dtoString.split(","));
         for (String str : packagelist) {
@@ -250,26 +249,26 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public DTO getInfoDto(D id, PageData pageData, String... fields) throws ClassNotFoundException {
+    public DTO getInfoDto(D id, PageData pageData, String... fields) {
         var query = getInfoQuery(false, putId(id, pageData), fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
 
 
-    public DTO getInfoDto(D id, String... fields) throws ClassNotFoundException {
+    public DTO getInfoDto(D id, String... fields) {
         var query = getInfoQuery(false, null, fields);
         Tuple result = (Tuple) query.getSingleResult();
         return getDto(result);
     }
 
 
-    public DTO getInfoDto(D id, String fields) throws ClassNotFoundException {
+    public DTO getInfoDto(D id, String fields) {
         return getInfoDto(id, fields.split(","));
     }
 
 
-    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData) throws ClassNotFoundException {
+    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData) {
         var query = getInfoQuery(isT, putId(id, pageData));
         Tuple result = (Tuple) query.uniqueResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
@@ -288,7 +287,7 @@ public class BaseDao<T, DTO, D> {
      * @param isT
      * @return
      */
-    public DtoOrT getInfoDtoOrT(D id, boolean isT) throws ClassNotFoundException {
+    public DtoOrT getInfoDtoOrT(D id, boolean isT) {
         var query = getInfoQuery(isT, putId(id, null));
         Tuple result = (Tuple) query.getSingleResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
@@ -309,7 +308,7 @@ public class BaseDao<T, DTO, D> {
         return list.toArray(Predicate[]::new);
     }
 
-    public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) throws ClassNotFoundException {
+    public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) {
         Predicate[] predicates = getPredicateArray(pageData);
 
         if (predicates.length > 0) {
@@ -328,12 +327,14 @@ public class BaseDao<T, DTO, D> {
      * @param pageData
      * @param isT
      * @return
-     * @throws ClassNotFoundException
      */
-    public DtoOrT getDtoOrTList(PageData pageData, boolean isT) throws ClassNotFoundException {
+    public DtoOrT getDtoOrTList(PageData pageData, boolean isT) {
         var query = getListQuery(pageData, isT);
         List<Tuple> result = query.getResultList();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
+        if(null == result) {
+            return dtoOrT;
+        }
         if (isT) {
             dtoOrT.setTList(getList(result));
         } else {
@@ -342,10 +343,13 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
-    public DtoOrT getDtoOrTList(PageData pageData, boolean isT,String... fileds) throws ClassNotFoundException {
+    public DtoOrT getDtoOrTList(PageData pageData, boolean isT,String... fileds) {
         var query = getListQuery(pageData, isT,fileds);
         List<Tuple> result = query.getResultList();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
+        if(null == result) {
+            return dtoOrT;
+        }
         if (isT) {
             dtoOrT.setTList(getList(result));
         } else {
@@ -360,7 +364,7 @@ public class BaseDao<T, DTO, D> {
      * @param pageData
      * @return
      */
-    public List<DTO> getDtoList(PageData pageData, String... fileds) throws ClassNotFoundException {
+    public List<DTO> getDtoList(PageData pageData, String... fileds)  {
         var query = getListQuery(pageData, false, fileds);
         List<Tuple> result = query.getResultList();
         return getDtoList(result);
@@ -373,7 +377,7 @@ public class BaseDao<T, DTO, D> {
      * @param pageData
      * @return
      */
-    public PageInfo getPageInfo(PageData pageData, boolean isT) throws ClassNotFoundException {
+    public PageInfo getPageInfo(PageData pageData, boolean isT) {
         var query = getListQuery(pageData, isT);
         PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
         query.setFirstResult(pageData.getMaxRows());
@@ -390,7 +394,7 @@ public class BaseDao<T, DTO, D> {
      * @param fileds   需要查询的字断
      * @return
      */
-    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) throws ClassNotFoundException {
+    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds)  {
         var query = getListQuery(pageData, isT, fileds);
         PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
         query.setFirstResult(pageData.getMaxRows());
@@ -424,6 +428,9 @@ public class BaseDao<T, DTO, D> {
      */
     public List<DTO> getDtoList(List<Tuple> list) {
         List<DTO> result = new ArrayList<>();
+        if(null == list) {
+            return result;
+        }
         list.forEach(
                 r -> {
                     DTO dto = getDto(r);
@@ -441,6 +448,9 @@ public class BaseDao<T, DTO, D> {
      */
     public List<T> getList(List<Tuple> list) {
         List<T> result = new ArrayList<>();
+        if(null == list) {
+            return result;
+        }
         list.forEach(
                 r -> {
                     T t = getT(r);

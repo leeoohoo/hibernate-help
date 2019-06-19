@@ -109,7 +109,7 @@ public class LSelect {
 
 //-----------------------------------------------------------join------------------------------------------------------
 
-    public Object findOne() throws ClassNotFoundException {
+    public Object findOne() {
         if(!this.pageData.containsKey("id_eq") || this.pageData.get("id_eq") == null) {
             throw new RuntimeException("缺少主键条件");
         }
@@ -121,7 +121,7 @@ public class LSelect {
         }
     }
 
-    public List findList() throws ClassNotFoundException {
+    public List findList()  {
         var result = this.baseDao.getDtoOrTList(this.pageData,this.isT,this.fileds);
         if(this.isT) {
             return result.getTList();
@@ -130,7 +130,7 @@ public class LSelect {
         }
     }
 
-    public PageInfo findPage() throws ClassNotFoundException {
+    public PageInfo findPage()  {
         var result = this.baseDao.getPageInfo(this.pageData, this.isT,this.fileds);
         return result;
     }
