@@ -113,7 +113,7 @@ public class LSelect {
         if(!this.pageData.containsKey("id_eq") || this.pageData.get("id_eq") == null) {
             throw new RuntimeException("缺少主键条件");
         }
-        var result = this.baseDao.getInfoDtoOrT(this.pageData.get("id_eq"),this.isT,this.pageData);
+        var result = this.baseDao.getInfoDtoOrT(this.pageData.get("id_eq"),this.isT,this.pageData,this.fileds);
         if(this.isT) {
             return result.getT();
         }else {

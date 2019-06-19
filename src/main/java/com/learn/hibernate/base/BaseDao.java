@@ -280,6 +280,18 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
+    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData,String... fileds) {
+        var query = getInfoQuery(isT, putId(id, pageData),fileds);
+        Tuple result = (Tuple) query.uniqueResult();
+        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
+        if (isT) {
+            dtoOrT.setT(getT(result));
+        } else {
+            dtoOrT.setDto(getDto(result));
+        }
+        return dtoOrT;
+    }
+
     /**
      * 没有条件的getInfo
      *
@@ -289,7 +301,7 @@ public class BaseDao<T, DTO, D> {
      */
     public DtoOrT getInfoDtoOrT(D id, boolean isT) {
         var query = getInfoQuery(isT, putId(id, null));
-        Tuple result = (Tuple) query.getSingleResult();
+        Tuple result = (Tuple) query.uniqueResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
             dtoOrT.setT(getT(result));
