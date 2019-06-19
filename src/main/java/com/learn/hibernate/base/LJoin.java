@@ -29,7 +29,7 @@ public class LJoin {
     }
 
     public LJoin followUp(String tableName, JoinType joinType) {
-        this.join.join(tableName, joinType);
+        this.join = this.join.join(tableName, joinType);
         return this;
     }
 

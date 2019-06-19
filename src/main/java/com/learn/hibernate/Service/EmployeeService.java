@@ -5,6 +5,7 @@ import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.Action;
 import com.learn.hibernate.entity.Card;
+import com.learn.hibernate.entity.CardRecord;
 import com.learn.hibernate.entity.RoleAction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,18 +79,39 @@ public class EmployeeService {
 ////                .asMapping("id,name,organName,dempartmentName")
 //                .findPage();
 
-        var t = lQuery.find(Card.class)
-                .join("employee", JoinType.LEFT)
+//        var t = lQuery.find(Card.class)
+//                .join("employee", JoinType.LEFT)
+//                .followUp("organization",JoinType.LEFT)
+//                .fetch()
+//                .select("id,cardNo,cardSn," +
+//                        "state,createdUserName,lastUpdateUserName," +
+//                        "createdDateTime,lastUpdateDateTime,employeeId," +
+//                        "employee.name,employee.userNo,employee.state," +
+//                        "employee.organization.id,employee.organization.name")
+//                .where(pageData)
+//                .asDto()
+//                .findPage();
+
+        var t = lQuery.find(CardRecord.class)
+                .join("card",JoinType.LEFT)
+                .followUp("employee", JoinType.LEFT)
                 .followUp("organization",JoinType.LEFT)
                 .fetch()
-                .select("id,cardNo,cardSn," +
-                        "state,createdUserName,lastUpdateUserName," +
-                        "createdDateTime,lastUpdateDateTime,employeeId," +
-                        "employee.name,employee.userNo,employee.state," +
-                        "employee.organization.id,employee.organization.name")
+                .select("id,type,card.cardNo,card.cardSn," +
+                        "card.employee.state,createdUserName," +
+                        "createdDateTime," +
+                        "card.employee.name,card.employee.userNo," +
+                        "card.employee.organization.name")
                 .where(pageData)
                 .asDto()
                 .findPage();
+//        lQuery.getBaseDao().init(CardRecord.class);
+//        var t = lQuery.getBaseDao().getCb().equal(lQuery.getBaseDao().getRoot()
+//                .join("card",JoinType.LEFT)
+//                .join("employee",JoinType.LEFT)
+//                .join("organization",JoinType.LEFT)
+//                .get("id"),null);
+//        System.out.println("sss");
 //
 //        var l = lQuery.find(RoleAction.class).findList();
 //
