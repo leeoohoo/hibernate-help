@@ -2,9 +2,9 @@ package com.learn.hibernate.Service;
 
 import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
-import com.learn.hibernate.common.entity.Employee;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.Action;
+import com.learn.hibernate.entity.Card;
 import com.learn.hibernate.entity.RoleAction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Object get() throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
+    public Object get(PageData pageData) throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
 //        var d = lQuery
 //                .find(Employee.class)
 //                .fetchLeft("organ","id")
@@ -70,15 +70,26 @@ public class EmployeeService {
 //        var result = baseDao.getDtoOrTList(new PageData(), true);
 //        return result;
 
-        var t = lQuery.customize(Employee.class)
-                .find("select e.id, e.name, o.name, d.name from employee e " +
-                        " left join organ o on o.id = e.organ_id" +
-                        " left join organ d on d.id = e.dempartment_id")
-//                .asMap()
-//                .asMapping("id,name,organName,dempartmentName")
+//        var t = lQuery.customize(Employee.class)
+//                .find("select e.id, e.name, o.name, d.name from employee e " +
+//                        " left join organ o on o.id = e.organ_id" +
+//                        " left join organ d on d.id = e.dempartment_id")
+////                .asMap()
+////                .asMapping("id,name,organName,dempartmentName")
+//                .findPage();
+
+        var t = lQuery.find(Card.class)
+                .join("employee", JoinType.LEFT)
+                .followUp("organization",JoinType.LEFT)
+                .fetch()
+                .select("id,cardNo,cardSn," +
+                        "state,createdUserName,lastUpdateUserName," +
+                        "createdDateTime,lastUpdateDateTime,employeeId," +
+                        "employee.name,employee.userNo,employee.state," +
+                        "employee.organization.id,employee.organization.name")
+                .where(pageData)
+                .asDto()
                 .findPage();
-
-
 //
 //        var l = lQuery.find(RoleAction.class).findList();
 //

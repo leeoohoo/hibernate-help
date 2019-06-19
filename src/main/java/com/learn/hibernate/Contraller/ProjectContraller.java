@@ -3,6 +3,8 @@ package com.learn.hibernate.Contraller;
 import com.learn.hibernate.Service.EmployeeService;
 import com.learn.hibernate.Service.PlanService;
 import com.learn.hibernate.Service.ProjectService;
+import com.learn.hibernate.domian.PageData;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +33,8 @@ public class ProjectContraller {
     }
 
     @GetMapping("save")
-    public Object save() throws ClassNotFoundException, IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        return employeeService.get();
+    public Object save(ServerHttpRequest request) throws ClassNotFoundException, IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        return employeeService.get(new PageData(request));
     }
 //
 //    @GetMapping("delete")

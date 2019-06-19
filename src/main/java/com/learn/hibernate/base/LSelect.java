@@ -141,6 +141,9 @@ public class LSelect {
     //------------------------------------------------------------where-------------------------------------------------------
 
    public LSelect where(PageData pageData) {
+        this.pageData.setRows(pageData.getRows());
+        this.pageData.setPageIndex(pageData.getPageIndex());
+        this.pageData.setMaxRows(pageData.getMaxRows());
         this.pageData.putAll(pageData);
         return this;
    }
