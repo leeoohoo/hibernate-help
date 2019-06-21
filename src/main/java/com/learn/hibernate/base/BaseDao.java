@@ -323,10 +323,10 @@ public class BaseDao<T, DTO, D> {
     public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) {
         Predicate[] predicates = getPredicateArray(pageData);
 
-        if (predicates.length > 0) {
+        if (null != predicates && predicates.length > 0) {
             this.getCq().where(predicates);
         }
-        if (fileds.length <= 0) {
+        if (null == fileds  || fileds.length <= 0) {
             selectFilds(isT);
         } else {
             selectFilds(fileds);
@@ -801,17 +801,17 @@ public class BaseDao<T, DTO, D> {
                                 break;
                             case "ge":
                                 if (v != null) {
-                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                    ps.add(getPredicateGe(stes[0], (Number) v));
                                 }
                                 break;
                             case "le":
                                 if (v != null) {
-                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                    ps.add(getPredicateLe(stes[0], (Number) v));
                                 }
                                 break;
                             case "lt":
                                 if (v != null) {
-                                    ps.add(getPredicateGt(stes[0], (Number) v));
+                                    ps.add(getPredicateLt(stes[0], (Number) v));
                                 }
                                 break;
                             case "in":
@@ -827,7 +827,7 @@ public class BaseDao<T, DTO, D> {
                                 if (v != null) {
                                     var list = (List) v;
                                     if (list.size() > 0) {
-                                        ps.add(getPredicateIn(stes[0], (List) v));
+                                        ps.add(getPredicateNotIn(stes[0], (List) v));
                                     }
                                 }
                                 break;

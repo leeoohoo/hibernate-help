@@ -3,17 +3,14 @@ package com.learn.hibernate.Service;
 import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.PageData;
-import com.learn.hibernate.entity.Action;
-import com.learn.hibernate.entity.Card;
-import com.learn.hibernate.entity.CardRecord;
-import com.learn.hibernate.entity.RoleAction;
+import com.learn.hibernate.entity.*;
+import com.learn.hibernate.mongodb.base.LMongo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.JoinType;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
 
 @Service
@@ -22,25 +19,27 @@ public class EmployeeService {
 
     private final LQuery lQuery;
     private final BaseDao baseDao;
+    private final LMongo lMongo;
 
-    public EmployeeService(LQuery lQuery, BaseDao baseDao) {
+    public EmployeeService(LQuery lQuery, BaseDao baseDao, LMongo lMongo) {
         this.lQuery = lQuery;
         this.baseDao = baseDao;
+        this.lMongo = lMongo;
     }
 
     @Transactional
     public Object get(PageData pageData) throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
-//        var d = lQuery
-//                .find(Employee.class)
-//                .fetchLeft("organ","id")
-//                .fetchLeft("dempatment", "id")
-//                .eq("name","ddd")
-//                .or(new PageData("name_eq","ddd").add("id_eq",1L))
-//                .asDto()
-//                .groupBy("id")
-//                .order("name,asc","id,desc")
-//                .findPage();
-//
+        var d = lQuery
+                .find(Employee.class)
+                .fetchLeft("organ","id")
+                .fetchLeft("dempatment", "id")
+                .eq("name","ddd")
+                .or(new PageData("name_eq","ddd").add("id_eq",1L))
+                .asDto()
+                .groupBy("id")
+                .order("name,asc","id,desc")
+                .findPage();
+
 //
 //        lQuery.find(Employee.class)
 //                .asDto()
@@ -146,6 +145,8 @@ public class EmployeeService {
 //                .asUpdate()
 //                .set(action)
 //                .updateExecution();
+
+        lMongo.find(Employee.class).where().eq("name","ddd").findList();
 
 
         return t;
