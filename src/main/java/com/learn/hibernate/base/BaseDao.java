@@ -175,7 +175,6 @@ public class BaseDao<T, DTO, D> {
         for (int i = 0; i < list.size(); i++) {
             t = list.get(i);
             session.saveOrUpdate(t);
-
         }
         return true;
 

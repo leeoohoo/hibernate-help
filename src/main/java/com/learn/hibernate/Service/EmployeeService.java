@@ -123,8 +123,9 @@ public class EmployeeService {
         action.setMenuId("ddddd");
 
         Action action1 = new Action();
-        action1.setCode("fff");
-        action1.setDescription("eeee");
+        action1.setId("402880e76b7d61be016b7d61cbe50000");
+        action1.setCode("fdsfsdfsdfff");
+        action1.setDescription("dsfsdfsd");
         action1.setName("ddd");
         action1.setMenuId("ddddd");
 //        var g = lQuery.save(action);
