@@ -6,11 +6,16 @@ import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.*;
 import com.learn.hibernate.mongodb.base.LMongo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.JoinType;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Service
@@ -29,16 +34,7 @@ public class EmployeeService {
 
     @Transactional
     public Object get(PageData pageData) throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
-        var d = lQuery
-                .find(Employee.class)
-                .fetchLeft("organ","id")
-                .fetchLeft("dempatment", "id")
-                .eq("name","ddd")
-                .or(new PageData("name_eq","ddd").add("id_eq",1L))
-                .asDto()
-                .groupBy("id")
-                .order("name,asc","id,desc")
-                .findPage();
+
 
 //
 //        lQuery.find(Employee.class)
@@ -89,21 +85,21 @@ public class EmployeeService {
 //                        "employee.organization.id,employee.organization.name")
 //                .where(pageData)
 //                .asDto()
+////                .findPage();
+//
+//        var t = lQuery.find(CardRecord.class)
+//                .join("card",JoinType.LEFT)
+//                .followUp("employee", JoinType.LEFT)
+//                .followUp("organization",JoinType.LEFT)
+//                .fetch()
+//                .select("id,type,card.cardNo,card.cardSn," +
+//                        "card.employee.state,createdUserName," +
+//                        "createdDateTime," +
+//                        "card.employee.name,card.employee.userNo," +
+//                        "card.employee.organization.name")
+//                .where(pageData)
+//                .asDto()
 //                .findPage();
-
-        var t = lQuery.find(CardRecord.class)
-                .join("card",JoinType.LEFT)
-                .followUp("employee", JoinType.LEFT)
-                .followUp("organization",JoinType.LEFT)
-                .fetch()
-                .select("id,type,card.cardNo,card.cardSn," +
-                        "card.employee.state,createdUserName," +
-                        "createdDateTime," +
-                        "card.employee.name,card.employee.userNo," +
-                        "card.employee.organization.name")
-                .where(pageData)
-                .asDto()
-                .findPage();
 //        lQuery.getBaseDao().init(CardRecord.class);
 //        var t = lQuery.getBaseDao().getCb().equal(lQuery.getBaseDao().getRoot()
 //                .join("card",JoinType.LEFT)
@@ -120,11 +116,17 @@ public class EmployeeService {
 //        employee.setOrganId(4L);
 //        var f = lQuery.save(employee);
 //
-//        Action action = new Action();
-//        action.setCode("ddd");
-//        action.setDescription("eeee");
-//        action.setName("ddd");
-//        action.setMenuId("ddddd");
+        Action action = new Action();
+        action.setCode("ddd");
+        action.setDescription("eeee");
+        action.setName("ddd");
+        action.setMenuId("ddddd");
+
+        Action action1 = new Action();
+        action1.setCode("fff");
+        action1.setDescription("eeee");
+        action1.setName("ddd");
+        action1.setMenuId("ddddd");
 //        var g = lQuery.save(action);
 //
 //
@@ -145,10 +147,34 @@ public class EmployeeService {
 //                .asUpdate()
 //                .set(action)
 //                .updateExecution();
+        List<Action> list = new ArrayList<>();
+        list.add(action);
+        list.add(action1);
+        lQuery.saveAll(list);
 
-        lMongo.find(Employee.class).where().eq("name","ddd").findList();
+
+//        lMongo
+//                .find(Employee.class)
+//                .where().eq("name","ddd")
+//                .notIn("id", Arrays.asList())
+//                .findList();
+        var d = select();
+//        var d = "";
+        return d;
+    }
 
 
-        return t;
+    @Transactional
+    public Object select() {
+        var d = lQuery
+                .find(Employee.class)
+                .fetchLeft("organization","id")
+                .fetchLeft("department", "id")
+                .eq("name","ddd")
+                .or(new PageData("name_eq","ddd").add("id_eq",1L))
+                .groupBy("id")
+                .order("name,asc","id,desc")
+                .findPage();
+        return d;
     }
 }

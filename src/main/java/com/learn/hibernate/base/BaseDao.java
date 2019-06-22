@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -35,6 +37,7 @@ import java.util.*;
 @PropertySource("classpath:my_base_dao.properties")
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Slf4j
+@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
 public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
@@ -167,26 +170,15 @@ public class BaseDao<T, DTO, D> {
         if (null == list && list.size() < 0) {
             return true;
         }
-        try {
-            T t = null;
-            this.getBaseQuery().getSession().beginTransaction();
-            for (int i = 0; i < list.size(); i++) {
-                t = list.get(i);
-                this.baseQuery.getSession().saveOrUpdate(t);
-                if (i % 50 == 0) {
-                    this.getBaseQuery().getSession().flush();
-                    this.getBaseQuery().getSession().clear();
-                }
-            }
-            this.getBaseQuery().getSession().getTransaction().commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace(); // 打印错误信息
-            this.getBaseQuery().getSession().getTransaction().rollback();
-        } finally {
-            this.getBaseQuery().getSession().close();
+        var session = this.baseQuery.getSession();
+        T t = null;
+        for (int i = 0; i < list.size(); i++) {
+            t = list.get(i);
+            session.saveOrUpdate(t);
+
         }
         return true;
+
     }
 
     public Boolean updateById(T t, D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
@@ -280,8 +272,8 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
-    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData,String... fileds) {
-        var query = getInfoQuery(isT, putId(id, pageData),fileds);
+    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData, String... fileds) {
+        var query = getInfoQuery(isT, putId(id, pageData), fileds);
         Tuple result = (Tuple) query.uniqueResult();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
@@ -326,7 +318,7 @@ public class BaseDao<T, DTO, D> {
         if (null != predicates && predicates.length > 0) {
             this.getCq().where(predicates);
         }
-        if (null == fileds  || fileds.length <= 0) {
+        if (null == fileds || fileds.length <= 0) {
             selectFilds(isT);
         } else {
             selectFilds(fileds);
@@ -344,7 +336,7 @@ public class BaseDao<T, DTO, D> {
         var query = getListQuery(pageData, isT);
         List<Tuple> result = query.getResultList();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if(null == result) {
+        if (null == result) {
             return dtoOrT;
         }
         if (isT) {
@@ -355,11 +347,11 @@ public class BaseDao<T, DTO, D> {
         return dtoOrT;
     }
 
-    public DtoOrT getDtoOrTList(PageData pageData, boolean isT,String... fileds) {
-        var query = getListQuery(pageData, isT,fileds);
+    public DtoOrT getDtoOrTList(PageData pageData, boolean isT, String... fileds) {
+        var query = getListQuery(pageData, isT, fileds);
         List<Tuple> result = query.getResultList();
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if(null == result) {
+        if (null == result) {
             return dtoOrT;
         }
         if (isT) {
@@ -376,7 +368,7 @@ public class BaseDao<T, DTO, D> {
      * @param pageData
      * @return
      */
-    public List<DTO> getDtoList(PageData pageData, String... fileds)  {
+    public List<DTO> getDtoList(PageData pageData, String... fileds) {
         var query = getListQuery(pageData, false, fileds);
         List<Tuple> result = query.getResultList();
         return getDtoList(result);
@@ -406,7 +398,7 @@ public class BaseDao<T, DTO, D> {
      * @param fileds   需要查询的字断
      * @return
      */
-    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds)  {
+    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) {
         var query = getListQuery(pageData, isT, fileds);
         PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
         query.setFirstResult(pageData.getMaxRows());
@@ -419,7 +411,7 @@ public class BaseDao<T, DTO, D> {
 
     public Query getListQuery(PageData pageData, boolean isT, String... fileds) {
         var p = getPredicateArray(pageData);
-        if(null != p && p.length >0){
+        if (null != p && p.length > 0) {
             cq.where(p);
         }
         if (fileds == null || fileds.length <= 0) {
@@ -440,7 +432,7 @@ public class BaseDao<T, DTO, D> {
      */
     public List<DTO> getDtoList(List<Tuple> list) {
         List<DTO> result = new ArrayList<>();
-        if(null == list) {
+        if (null == list) {
             return result;
         }
         list.forEach(
@@ -460,7 +452,7 @@ public class BaseDao<T, DTO, D> {
      */
     public List<T> getList(List<Tuple> list) {
         List<T> result = new ArrayList<>();
-        if(null == list) {
+        if (null == list) {
             return result;
         }
         list.forEach(
@@ -745,17 +737,17 @@ public class BaseDao<T, DTO, D> {
         }
         Field[] declaredFields = obj.getClass().getDeclaredFields();
         Field[] superFields = obj.getClass().getSuperclass().getDeclaredFields();
-        if(null != declaredFields && declaredFields.length > 0) {
-            setFiledValue(map,obj,declaredFields);
+        if (null != declaredFields && declaredFields.length > 0) {
+            setFiledValue(map, obj, declaredFields);
         }
-        if(null != superFields && superFields.length > 0) {
-            setFiledValue(map,obj,superFields);
+        if (null != superFields && superFields.length > 0) {
+            setFiledValue(map, obj, superFields);
         }
 
         return obj;
     }
 
-    private void setFiledValue(Map<String, Object> map,Object obj, Field[] fields) {
+    private void setFiledValue(Map<String, Object> map, Object obj, Field[] fields) {
         for (Field field : fields) {
             int mod = field.getModifiers();
             if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
@@ -769,9 +761,6 @@ public class BaseDao<T, DTO, D> {
             }
         }
     }
-
-
-
 
 
     public List<Predicate> getPredicates(PageData pageData) {

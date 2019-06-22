@@ -77,7 +77,6 @@ public class Employee extends BaseModel {
     private List<CardFingerprintManagement> cardFingerprintManagements;
 
 
-    private Card card;
 
 
 
