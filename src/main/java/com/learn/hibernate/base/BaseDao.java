@@ -274,6 +274,9 @@ public class BaseDao<T, DTO, D> {
     public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData, String... fileds) {
         var query = getInfoQuery(isT, putId(id, pageData), fileds);
         Tuple result = (Tuple) query.uniqueResult();
+        if(null == result) {
+            return null;
+        }
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (isT) {
             dtoOrT.setT(getT(result));
@@ -349,6 +352,9 @@ public class BaseDao<T, DTO, D> {
     public DtoOrT getDtoOrTList(PageData pageData, boolean isT, String... fileds) {
         var query = getListQuery(pageData, isT, fileds);
         List<Tuple> result = query.getResultList();
+        if(null == result) {
+            return null;
+        }
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
         if (null == result) {
             return dtoOrT;

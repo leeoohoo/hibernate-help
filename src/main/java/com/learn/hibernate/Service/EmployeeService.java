@@ -4,7 +4,6 @@ import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.*;
-import com.learn.hibernate.mongodb.base.LMongo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,12 +23,10 @@ public class EmployeeService {
 
     private final LQuery lQuery;
     private final BaseDao baseDao;
-    private final LMongo lMongo;
 
-    public EmployeeService(LQuery lQuery, BaseDao baseDao, LMongo lMongo) {
+    public EmployeeService(LQuery lQuery, BaseDao baseDao) {
         this.lQuery = lQuery;
         this.baseDao = baseDao;
-        this.lMongo = lMongo;
     }
 
     @Transactional
@@ -116,42 +113,42 @@ public class EmployeeService {
 //        employee.setOrganId(4L);
 //        var f = lQuery.save(employee);
 //
-        Action action = new Action();
-        action.setCode("ddd");
-        action.setDescription("eeee");
-        action.setName("ddd");
-        action.setMenuId("ddddd");
-
-        Action action1 = new Action();
-        action1.setId("402880e76b7d61be016b7d61cbe50000");
-        action1.setCode("fdsfsdfsdfff");
-        action1.setDescription("dsfsdfsd");
-        action1.setName("ddd");
-        action1.setMenuId("ddddd");
-//        var g = lQuery.save(action);
+//        Action action = new Action();
+//        action.setCode("ddd");
+//        action.setDescription("eeee");
+//        action.setName("ddd");
+//        action.setMenuId("ddddd");
 //
-//
-//        var h = lQuery.find(RoleAction.class)
-//                .join("role", JoinType.LEFT)
-//                .followUp("userRole",JoinType.INNER)
-//                .justJoin("test",JoinType.INNER)
-//                .fetch()
-//                .select("id")
-//                .findList();
-//
-////        Action action = new Action();
-//        action.setMenuId("2");
-//        action.setId("1");
-//        var j = lQuery.update(Action.class)
-//                .where()
-//                .eq("id","1")
-//                .asUpdate()
-//                .set(action)
-//                .updateExecution();
-        List<Action> list = new ArrayList<>();
-        list.add(action);
-        list.add(action1);
-        lQuery.saveAll(list);
+//        Action action1 = new Action();
+//        action1.setId("402880e76b7d61be016b7d61cbe50000");
+//        action1.setCode("fdsfsdfsdfff");
+//        action1.setDescription("dsfsdfsd");
+//        action1.setName("ddd");
+//        action1.setMenuId("ddddd");
+////        var g = lQuery.save(action);
+////
+////
+////        var h = lQuery.find(RoleAction.class)
+////                .join("role", JoinType.LEFT)
+////                .followUp("userRole",JoinType.INNER)
+////                .justJoin("test",JoinType.INNER)
+////                .fetch()
+////                .select("id")
+////                .findList();
+////
+//////        Action action = new Action();
+////        action.setMenuId("2");
+////        action.setId("1");
+////        var j = lQuery.update(Action.class)
+////                .where()
+////                .eq("id","1")
+////                .asUpdate()
+////                .set(action)
+////                .updateExecution();
+//        List<Action> list = new ArrayList<>();
+//        list.add(action);
+//        list.add(action1);
+//        lQuery.saveAll(list);
 
 
 //        lMongo
@@ -159,8 +156,12 @@ public class EmployeeService {
 //                .where().eq("name","ddd")
 //                .notIn("id", Arrays.asList())
 //                .findList();
-        var d = select();
+//        var d = select();
 //        var d = "";
+
+        var d = lQuery.find(Employee.class)
+                .eq("id",3)
+                .findOne();
         return d;
     }
 

@@ -114,6 +114,9 @@ public class LSelect {
             throw new RuntimeException("缺少主键条件");
         }
         var result = this.baseDao.getInfoDtoOrT(this.pageData.get("id_eq"),this.isT,this.pageData,this.fileds);
+        if(null == result) {
+            return null;
+        }
         if(this.isT) {
             return result.getT();
         }else {
@@ -123,6 +126,9 @@ public class LSelect {
 
     public List findList()  {
         var result = this.baseDao.getDtoOrTList(this.pageData,this.isT,this.fileds);
+        if(null == result) {
+            return null;
+        }
         if(this.isT) {
             return result.getTList();
         }else {
