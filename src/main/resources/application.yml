@@ -31,11 +31,7 @@ spring:
       register-mbeans: true
 
 
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: test
+
 
 server:
   port: 8779
