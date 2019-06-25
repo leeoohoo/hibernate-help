@@ -15,9 +15,9 @@ public class UpdateQuery<T> extends BaseQuery<T> {
 
 
     public UpdateQuery(MyQuery myQuery, Session session) {
-        this.session = session;
-        this.myQuery = myQuery;
-        this.myQuery.setUpdateSql(new StringBuilder("update "+ super.getCurrentTableName()+ " set "));
+        this.setSession(session);
+        this.setMyQuery(myQuery);
+        this.getMyQuery().setUpdateSql(new StringBuilder("update "+ super.getCurrentTableName()+ " set "));
     }
 
 
@@ -28,7 +28,7 @@ public class UpdateQuery<T> extends BaseQuery<T> {
                     sb.append(MyStringUtils.getSqlWord(k) + " = '" + v + "',");
                 }
         );
-        this.myQuery.getUpdateSql().append(sb.toString());
+        this.getMyQuery().getUpdateSql().append(sb.toString());
         return this;
     }
 
@@ -38,7 +38,7 @@ public class UpdateQuery<T> extends BaseQuery<T> {
     }
 
     public UpdateQuery set(T t) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        var clz = this.myQuery.getAClass();
+        var clz = this.getMyQuery().getAClass();
         if(!clz.equals(t.getClass())) {
             throw new RuntimeException("操作的数据与当前实例不符");
         }

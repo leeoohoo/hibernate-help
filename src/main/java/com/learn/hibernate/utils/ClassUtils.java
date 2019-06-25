@@ -91,7 +91,7 @@ public class ClassUtils {
         return map;
     }
 
-    public static List<String> getFildsName(Field[]... fields) {
+    public static synchronized List<String> getFildsName(Field[]... fields) {
         List<String> fildsName = new ArrayList<>();
         if (fields.length <= 0) {
             return fildsName;

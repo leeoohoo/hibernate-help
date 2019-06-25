@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -15,12 +16,13 @@ import java.util.List;
 @Data
 @Component
 @Slf4j
+@Scope(scopeName = "prototype")
 public class BaseQuery<T> {
 
     @Autowired
     private EntityManager entityManager;
 
-    protected Session session;
+    private Session session;
 
 
 
@@ -28,7 +30,7 @@ public class BaseQuery<T> {
         this.session = this.entityManager.unwrap(Session.class);
     }
 
-    protected MyQuery myQuery = new MyQuery();
+    private MyQuery myQuery = new MyQuery();
 
     public BaseQuery init(Class aClass) {
         this.myQuery.setAClass(aClass);

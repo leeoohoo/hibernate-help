@@ -4,6 +4,7 @@ package com.learn.hibernate.base;
 import com.learn.hibernate.domian.PageData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.context.annotation.Scope;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -14,13 +15,14 @@ import javax.persistence.criteria.Root;
  */
 @Data
 @AllArgsConstructor
+@Scope(scopeName = "prototype")
 public class MyBQR {
 
-    CriteriaBuilder cb;
+    private CriteriaBuilder cb;
 
-    CriteriaQuery cq;
+    private CriteriaQuery cq;
 
-    Root root;
+    private Root root;
 
 
 }

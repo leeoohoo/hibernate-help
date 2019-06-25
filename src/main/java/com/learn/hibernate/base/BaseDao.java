@@ -14,6 +14,7 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -37,7 +38,7 @@ import java.util.*;
 @PropertySource("classpath:my_base_dao.properties")
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Slf4j
-@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
+@Scope(scopeName = "prototype")
 public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
@@ -53,18 +54,17 @@ public class BaseDao<T, DTO, D> {
 
     private String entityName;
 
-    CriteriaBuilder cb;
+    private CriteriaBuilder cb;
 
-    CriteriaQuery cq;
+    private CriteriaQuery cq;
 
-    boolean isGroup;
+    private boolean isGroup;
 
-    Root root;
+    private Root root;
 
-    Class<T> tClass;
+    private Class<T> tClass;
 
-    Class<DTO> dtoClass;
-
+    private Class<DTO> dtoClass;
 
     private PageData orPageData;
 
@@ -72,7 +72,7 @@ public class BaseDao<T, DTO, D> {
     private BaseQuery baseQuery;
 
 
-    public BaseDao() {
+    private BaseDao() {
     }
 
     public void init(String clazz) throws ClassNotFoundException {

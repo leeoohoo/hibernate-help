@@ -9,7 +9,7 @@ public class  MyStringUtils {
      * @param s
      * @return
      */
-    public static String getSqlWord(String s) {
+    public static synchronized String getSqlWord(String s) {
         StringBuilder sb = new StringBuilder();
         char[] chars = s.toCharArray();
         for(int i = 0; i < chars.length; i++) {
@@ -30,14 +30,14 @@ public class  MyStringUtils {
      * 获取最后一个指定char后边的String
      * @return
      */
-    public static String subStringLastChar(String s,char c) {
+    public static synchronized String subStringLastChar(String s,char c) {
         return s.substring(s.lastIndexOf(c)+1);
     }
 
 
 
 
-    public static String removeStringLastString(StringBuilder sb, String c){
+    public static synchronized String removeStringLastString(StringBuilder sb, String c){
         return sb.substring(0,sb.lastIndexOf(c));
     }
 }

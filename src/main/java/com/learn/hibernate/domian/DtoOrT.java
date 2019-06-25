@@ -12,11 +12,11 @@ import java.util.List;
 @Data
 public class DtoOrT<DTO,T> {
 
-    List<DTO> dtoList;
+    private List<DTO> dtoList;
 
-    List<T> tList;
+    private List<T> tList;
 
-    T t;
+    private T t;
 
-    DTO dto;
+    private DTO dto;
 }

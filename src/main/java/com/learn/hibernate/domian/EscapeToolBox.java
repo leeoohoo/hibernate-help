@@ -140,18 +140,18 @@ public class EscapeToolBox {
 		return sbuf.toString();
 	}
 
-	public static void main(String[] args) throws Exception {
-		String str = " ( caption like '%dddd%' ) ";
-		String escapeStr = escape(str);
-		System.out.println("编码后：" + escapeStr);
-		System.out.println("解码后：" + unescape(escapeStr));
-		System.out.println("未编码解码后：" + unescape(str));
-		System.out.println("解码两次后：" + escape(escape(str)));
-		System.out.println("中文直接解码后：" + unescape("在哪里"));
-		System.out.println(escape("中国"));
-		System.out.println(unescape("中国"));
-		System.out.println(unescape("%u4E2D%u56FD"));
-		System.out.println(unescape("%u67E5")); // 查
-		System.out.println(unescape("%u67E5%u770B"));// 查看
-	}
+//	public static void main(String[] args) throws Exception {
+//		String str = " ( caption like '%dddd%' ) ";
+//		String escapeStr = escape(str);
+//		System.out.println("编码后：" + escapeStr);
+//		System.out.println("解码后：" + unescape(escapeStr));
+//		System.out.println("未编码解码后：" + unescape(str));
+//		System.out.println("解码两次后：" + escape(escape(str)));
+//		System.out.println("中文直接解码后：" + unescape("在哪里"));
+//		System.out.println(escape("中国"));
+//		System.out.println(unescape("中国"));
+//		System.out.println(unescape("%u4E2D%u56FD"));
+//		System.out.println(unescape("%u67E5")); // 查
+//		System.out.println(unescape("%u67E5%u770B"));// 查看
+//	}
 }

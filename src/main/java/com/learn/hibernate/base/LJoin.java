@@ -2,6 +2,7 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import lombok.Data;
+import org.springframework.context.annotation.Scope;
 
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
@@ -10,6 +11,7 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 @Data
+@Scope(scopeName = "prototype")
 public class LJoin {
 
     private LSelect lSelect;

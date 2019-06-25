@@ -2,6 +2,7 @@ package com.learn.hibernate.base;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,10 +10,15 @@ import java.util.List;
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Data
 @Component
+@Scope(scopeName = "prototype")
 public class LQuery<T> {
 
     @Autowired
     private  BaseDao baseDao;
+
+    private LQuery() {
+
+    }
 
 
     public Object save(T t) {
