@@ -16,7 +16,7 @@ public class LQuery<T> {
     @Autowired
     private  BaseDao baseDao;
 
-    private LQuery() {
+    public LQuery() {
 
     }
 
