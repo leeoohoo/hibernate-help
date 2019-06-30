@@ -1,5 +1,6 @@
 package com.learn.hibernate.base;
 
+import com.learn.hibernate.utils.SpringUtil;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -16,41 +17,50 @@ public class LQuery<T> {
     @Autowired
     private  BaseDao baseDao;
 
-    public LQuery() {
 
+
+    public LQuery() {
+        this.baseDao = (BaseDao) SpringUtil.getBean("baseDao");
     }
 
+    private static BaseDao getBaseDao() {
+        return (BaseDao) SpringUtil.getBean("baseDao");
+    }
 
-    public Object save(T t) {
-        this.baseDao.getBaseQuery().initSession();
-        this.baseDao.setTClass(t.getClass());
-        return this.baseDao.add(t);
+    private static BaseDao initBaseDao(Class clz) {
+        var baseDao = getBaseDao();
+        baseDao.init(clz);
+        return baseDao;
+    }
+
+    public   Object save(T t) {
+        var baseDao = getBaseDao();
+        baseDao.getBaseQuery().initSession();
+        baseDao.setTClass(t.getClass());
+        return baseDao.add(t);
     }
 
     public boolean saveAll(List<T> ts) {
-        this.baseDao.getBaseQuery().initSession();
-        return this.baseDao.addBach(ts);
+        var baseDao = getBaseDao();
+        baseDao.getBaseQuery().initSession();
+        return baseDao.addBach(ts);
     }
 
-    public LSelect find(Class clz) {
-        this.baseDao.init(clz);
-        return new LSelect(this.baseDao);
+    public static LSelect find(Class clz) {
+        return new LSelect(initBaseDao(clz));
     }
 
-    public LCustomize customize(Class clz)  {
-        this.baseDao.init(clz);
-        return new LCustomize(this.baseDao);
+    public static LCustomize customize(Class clz)  {
+        return new LCustomize(initBaseDao(clz));
     }
 
-    public LDelete delete(Class clz)  {
-        this.baseDao.init(clz);
-        return new LDelete(this.baseDao);
+    public static LDelete delete(Class clz)  {
+        return new LDelete(initBaseDao(clz));
     }
 
 
-    public BaseQuery update(Class clz) {
-        this.baseDao.init(clz);
-        return this.baseDao.getBaseQuery();
+    public static BaseQuery update(Class clz) {
+        return getBaseDao().getBaseQuery();
     }
 
 

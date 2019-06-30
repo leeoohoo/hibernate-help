@@ -4,6 +4,7 @@ import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,13 +22,8 @@ import java.util.List;
 public class EmployeeService {
 
 
-    private final LQuery lQuery;
-    private final BaseDao baseDao;
 
-    public EmployeeService(LQuery lQuery, BaseDao baseDao) {
-        this.lQuery = lQuery;
-        this.baseDao = baseDao;
-    }
+
 
     @Transactional
     public Object get(PageData pageData) throws ClassNotFoundException, IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
@@ -159,16 +155,31 @@ public class EmployeeService {
 //        var d = select();
 //        var d = "";
 
+        LQuery lQuery = new LQuery();
         var d = lQuery.find(Employee.class)
                 .eq("id",3)
+                .select("id")
+                .findOne();
+        LQuery.find(Employee.class)
+                .eq("id",3)
+                .select("id")
                 .findOne();
         return d;
+    }
+
+    private class myThread extends Thread {
+        @Autowired
+        private LQuery lQuery;
+        @Override
+        public void run() {
+
+        }
     }
 
 
     @Transactional
     public Object select() {
-        var d = lQuery
+        var d = new LQuery()
                 .find(Employee.class)
                 .fetchLeft("organization","id")
                 .fetchLeft("department", "id")

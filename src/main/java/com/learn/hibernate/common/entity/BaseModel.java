@@ -45,7 +45,7 @@ public class BaseModel implements Serializable {
 
     @Column(length = 2, nullable = false,columnDefinition = "int default 0")
     @Nojoin
-    private int isDeleted;
+    private Integer isDeleted;
 
 
 }

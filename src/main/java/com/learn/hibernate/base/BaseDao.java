@@ -72,7 +72,7 @@ public class BaseDao<T, DTO, D> {
     private BaseQuery baseQuery;
 
 
-    private BaseDao() {
+    public BaseDao() {
     }
 
     public void init(String clazz) throws ClassNotFoundException {
@@ -84,7 +84,7 @@ public class BaseDao<T, DTO, D> {
         initBQR();
     }
 
-    public void init(Class<T> clazz) {
+    public synchronized void init(Class<T> clazz) {
         this.tClass = clazz;
         var tableName = MyStringUtils.subStringLastChar(clazz.getName(), '.');
         this.entityName = tableName;
