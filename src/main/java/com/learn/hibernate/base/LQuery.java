@@ -2,28 +2,16 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.utils.SpringUtil;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Data
-@Component
-@Scope(scopeName = "prototype")
 public class LQuery<T> {
 
-    @Autowired
-    private  BaseDao baseDao;
 
 
-
-    public LQuery() {
-        this.baseDao = (BaseDao) SpringUtil.getBean("baseDao");
-    }
-
-    private static BaseDao getBaseDao() {
+    public static BaseDao getBaseDao() {
         return (BaseDao) SpringUtil.getBean("baseDao");
     }
 
@@ -33,14 +21,14 @@ public class LQuery<T> {
         return baseDao;
     }
 
-    public   Object save(T t) {
+    public  static <T> Object save(T t) {
         var baseDao = getBaseDao();
         baseDao.getBaseQuery().initSession();
         baseDao.setTClass(t.getClass());
         return baseDao.add(t);
     }
 
-    public boolean saveAll(List<T> ts) {
+    public static <T>  boolean  saveAll(List<T> ts) {
         var baseDao = getBaseDao();
         baseDao.getBaseQuery().initSession();
         return baseDao.addBach(ts);
