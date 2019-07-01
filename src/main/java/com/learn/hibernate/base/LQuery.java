@@ -48,7 +48,8 @@ public class LQuery<T> {
 
 
     public static BaseQuery update(Class clz) {
-        return getBaseDao().getBaseQuery();
+        var baseDao = initBaseDao(clz);
+        return baseDao.getBaseQuery();
     }
 
 

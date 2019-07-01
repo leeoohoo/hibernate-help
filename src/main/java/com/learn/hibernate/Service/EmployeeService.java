@@ -160,10 +160,12 @@ public class EmployeeService {
                 .eq("id",3)
                 .select("id")
                 .findOne();
+
         LQuery.find(Employee.class)
-                .eq("id",3)
+                .where(pageData)
+                .or(new PageData("name_eq","ddd").add("id_eq","22"))
                 .select("id")
-                .findOne();
+                .findPage();
         return d;
     }
 

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 
 @SpringBootApplication
 @EntityScan({"com.learn.hibernate.entity","com.learn.hibernate.common.entity"})
-@Import(LQuery.class)
 public class HibernateApplication {
 
     public static void main(String[] args) {
