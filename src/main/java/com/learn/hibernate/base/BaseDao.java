@@ -5,6 +5,7 @@ import com.learn.hibernate.annotation.Nojoin;
 import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.utils.ClassUtils;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -651,12 +652,45 @@ public class BaseDao<T, DTO, D> {
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
             if (Character.isUpperCase(c)) {
+
                 sb.append("." + String.valueOf(c).toLowerCase());
             } else {
-                sb.append(String.valueOf(c));
+                sb.append(c);
             }
         }
-        return sb.toString().split("\\.");
+
+        var strs =  sb.toString().split("\\.");
+        boolean flag = true;
+        for(var s : strs) {
+            if(!isEntity(s)){
+                flag = false;
+            }
+        }
+        if(flag) {
+            return strs;
+        }else {
+            return str.split("\\.");
+        }
+    }
+
+    private boolean isEntity(String entityName) {
+        entityName = MyStringUtils.upperCase(entityName);
+        var packagelist = Arrays.asList(this.entityString.split(","));
+        int count = 0;
+        for (String str : packagelist) {
+            try {
+                var clz = (Class<T>) Class.forName(str + "." + entityName);
+                if(null != clz) {
+                    return true;
+                }
+            } catch (ClassNotFoundException e) {
+                count++;
+                if (packagelist.size() <= count) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
