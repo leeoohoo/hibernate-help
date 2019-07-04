@@ -673,6 +673,11 @@ public class BaseDao<T, DTO, D> {
         }
     }
 
+    /**
+     * 用来检测该实体类是不是存在
+     * @param entityName
+     * @return
+     */
     private boolean isEntity(String entityName) {
         entityName = MyStringUtils.upperCase(entityName);
         var packagelist = Arrays.asList(this.entityString.split(","));
