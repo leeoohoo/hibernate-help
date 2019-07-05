@@ -275,7 +275,7 @@ public class BaseDao<T, DTO, D> {
     public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData, String... fileds) {
         var query = getInfoQuery(isT, putId(id, pageData), fileds);
         Tuple result = (Tuple) query.uniqueResult();
-        if(null == result) {
+        if (null == result) {
             return null;
         }
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
@@ -353,7 +353,7 @@ public class BaseDao<T, DTO, D> {
     public DtoOrT getDtoOrTList(PageData pageData, boolean isT, String... fileds) {
         var query = getListQuery(pageData, isT, fileds);
         List<Tuple> result = query.getResultList();
-        if(null == result) {
+        if (null == result) {
             return null;
         }
         DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
@@ -659,22 +659,20 @@ public class BaseDao<T, DTO, D> {
             }
         }
 
-        var strs =  sb.toString().split("\\.");
-        boolean flag = true;
-        for(var s : strs) {
-            if(!isEntity(s)){
-                flag = false;
+        var strs = sb.toString().split("\\.");
+        for (int i = 0; i < strs.length - 1; i++) {
+            var s = strs[i];
+            if (!isEntity(s)) {
+                return str.split("\\.");
             }
         }
-        if(flag) {
-            return strs;
-        }else {
-            return str.split("\\.");
-        }
+        return strs;
+
     }
 
     /**
      * 用来检测该实体类是不是存在
+     *
      * @param entityName
      * @return
      */
@@ -685,7 +683,7 @@ public class BaseDao<T, DTO, D> {
         for (String str : packagelist) {
             try {
                 var clz = (Class<T>) Class.forName(str + "." + entityName);
-                if(null != clz) {
+                if (null != clz) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {
