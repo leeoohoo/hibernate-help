@@ -4,13 +4,13 @@ import com.learn.hibernate.base.BaseDao;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.*;
+import org.hibernate.sql.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.JoinType;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -155,17 +155,19 @@ public class EmployeeService {
 //        var d = select();
 //        var d = "";
 
-        LQuery lQuery = new LQuery();
-        var d = lQuery.find(Employee.class)
-                .eq("id",3)
-                .select("id")
-                .findOne();
-
-        LQuery.find(Employee.class)
+        var d = LQuery.find(Card.class)
+                .join("employee", org.hibernate.sql.JoinType.LEFT_OUTER_JOIN)
+                .followUp("organization", JoinType.LEFT_OUTER_JOIN)
+                .fetch()
+                .select("id,cardNo,cardSn," +
+                        "state,createdUserName,lastUpdateUserName," +
+                        "createdDateTime,lastUpdateDateTime,employeeId," +
+                        "employee.name,employee.userNo,employee.state," +
+                        "organization.id,organization.name")
                 .where(pageData)
-                .or(new PageData("name_eq","ddd").add("id_eq","22"))
-                .select("id")
-                .findPage();
+                .order("desc,lastUpdateDateTime")
+                .asDto()
+                .findPage();;
         return d;
     }
 

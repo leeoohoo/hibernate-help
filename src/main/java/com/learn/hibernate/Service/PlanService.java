@@ -5,8 +5,6 @@ import com.learn.hibernate.domian.PageData;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 
 @Service
@@ -22,13 +20,13 @@ public class PlanService {
     @Transactional
     public Object getList() throws ClassNotFoundException {
 
-        var list = baseDao.getDtoOrTList(new PageData("name_eq","sss").add("age_ge", 1),true).getTList();
-
-        var page = baseDao.getPageInfo(new PageData("name_eq","aaa"),false, "name","age","address,project.name");
-
-
-        baseDao.getCb().equal(baseDao.getRoot().join("project", JoinType.LEFT).get("id"),null);
-        var result = baseDao.getDtoOrTList(new PageData("name", "aaa"),true);
+//        var list = baseDao.getDtoOrTList(new PageData("name_eq","sss").add("age_ge", 1),true).getTList();
+//
+//        var page = baseDao.getPageInfo(new PageData("name_eq","aaa"),false, "name","age","address,project.name");
+//
+//
+//        baseDao.getCb().equal(baseDao.getRoot().join("project", JoinType.LEFT).get("id"),null);
+//        var result = baseDao.getDtoOrTList(new PageData("name", "aaa"),true);
 
        return null;
     }

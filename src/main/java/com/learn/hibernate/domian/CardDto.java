@@ -39,9 +39,9 @@ public class CardDto {
    private Integer employeeState;
 
    @Nojoin
-   private String employeeOrganizationId;
+   private String organizationId;
 
-   private String employeeOrganizationName;
+   private String organizationName;
 
    @Nojoin
    @Ignore

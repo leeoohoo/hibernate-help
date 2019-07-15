@@ -293,9 +293,11 @@ public  class BaseDao<T, DTO, D>  {
     public PageInfo getPage() {
         Criteria pageResult = BaseDao.this.getPageResult();
         PageInfo pageInfo = (PageInfo) pageResult.uniqueResult();
-        pageInfo.init();
+        pageInfo.init(this.pageData);
         this.criteria = DetachedCriteria.forClass(this.tClass);
         Criteria result = this.getResult();
+        System.out.println(this.pageData.getPageIndex());
+        System.out.println(this.pageData.getRows());
         result.setFirstResult(this.pageData.getPageIndex());
         result.setMaxResults(this.pageData.getMaxRows());
         pageInfo.setList(result.list());

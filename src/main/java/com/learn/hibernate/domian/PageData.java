@@ -23,7 +23,7 @@ public class PageData extends HashMap implements Map {
 
 	private Integer rows =10;
 	private Integer pageIndex = 0;
-	private Integer maxRows=0;
+	private Integer maxRows=(this.pageIndex-1) * this.rows;
 
 
 	Map map = null;
