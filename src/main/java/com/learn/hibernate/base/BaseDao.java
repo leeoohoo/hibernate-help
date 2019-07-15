@@ -296,8 +296,6 @@ public  class BaseDao<T, DTO, D>  {
         pageInfo.init(this.pageData);
         this.criteria = DetachedCriteria.forClass(this.tClass);
         Criteria result = this.getResult();
-        System.out.println(this.pageData.getPageIndex());
-        System.out.println(this.pageData.getRows());
         result.setFirstResult(this.pageData.getPageIndex());
         result.setMaxResults(this.pageData.getMaxRows());
         pageInfo.setList(result.list());
@@ -566,7 +564,7 @@ public  class BaseDao<T, DTO, D>  {
             int index = filedName.indexOf(str);
             if (index == 0) {
                 String substring = filedName.substring(str.length());
-                substring = MyStringUtils.upperCase(substring);
+                substring = MyStringUtils.lowerCase(substring);
                 String s = str + "." + substring;
                 return s;
             }

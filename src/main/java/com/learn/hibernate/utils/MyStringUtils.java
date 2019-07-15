@@ -50,4 +50,14 @@ public class  MyStringUtils {
     public static synchronized String upperCase(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
+
+
+    /**
+     * 将string的首字母小写
+     * @param str
+     * @return
+     */
+    public static synchronized String lowerCase(String str) {
+        return str.substring(0, 1).toLowerCase() + str.substring(1);
+    }
 }
