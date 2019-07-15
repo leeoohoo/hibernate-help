@@ -2,205 +2,201 @@ package com.learn.hibernate.base;
 
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
+import com.learn.hibernate.enums.OrderType;
 import lombok.Data;
+import org.hibernate.sql.JoinType;
+import org.hibernate.type.Type;
+import org.springframework.context.annotation.Scope;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 import java.util.List;
 
 @Data
+@Scope(scopeName = "prototype")
+@SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 public class LSelect {
 
 
-    private  BaseDao baseDao;
-
-    private PageData pageData;
-
-    private boolean isT;
-
-    private String[] fileds;
-
-    private Path path;
-
+    private BaseDao baseDao;
 
 
     public LSelect(BaseDao baseDao) {
         this.baseDao = baseDao;
-        this.pageData = new PageData();
-        this.isT = true;
     }
 
     public LSelect select(String fileds) {
-        this.fileds = fileds.split(",");
+        this.baseDao.setSelectFileds(fileds);
         return this;
     }
 
     public LSelect asDto() {
-        this.isT = false;
+        this.baseDao.setT(false);
         return this;
     }
 
     public LSelect asDto(Class clazz) {
-        this.baseDao.setDtoClass(clazz);
-        this.isT = false;
+        this.baseDao.setResultClass(clazz);
         return this;
     }
 
     public LSelect setPage(PageData pageData) {
-        PageData p = pageData;
-        p.putAll(this.pageData);
-        this.pageData = p;
         return this;
     }
 
     //-----------------------------------------------------------join------------------------------------------------------
 
 
-    public LJoin join(String tableName,JoinType joinType) {
-        return new LJoin(tableName,joinType,this);
+    public LJoin join(String tableName, JoinType joinType) {
+        return new LJoin(tableName, joinType, this);
     }
 
-    public LSelect fetchInner(String tableName, String joinId) {
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.INNER).get(joinId),null);
+    public LSelect fetchInner(String tableName) {
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.INNER_JOIN);
         return this;
     }
 
 
-
-    public LSelect fetchInner(String tableName, String joinId,PageData pageData) {
-        List<Predicate> predicates = this.baseDao.getPredicates(pageData);
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.INNER).on(predicates.toArray(Predicate[]::new)).get(joinId),null);
+    public LSelect fetchInner(String tableName, String joinId, PageData pageData) {
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.INNER_JOIN);
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
         return this;
     }
-
 
 
     public LSelect order(String... fileds) {
-        this.baseDao.setOrderBy(fileds);
+        for (var str : fileds) {
+            String[] split = str.split(",");
+            switch (split[0]) {
+                case "asc":
+                    this.baseDao.getOrderTypeMap().put(split[1], OrderType.ASC);
+                    break;
+                case "desc":
+                    this.baseDao.getOrderTypeMap().put(split[1], OrderType.DESC);
+                    break;
+            }
+
+        }
         return this;
     }
+
     public LSelect groupBy(String fileds) {
-        this.baseDao.setGroupBy(fileds.split(","));
+        this.baseDao.getGroupFileds().append(","+fileds);
         return this;
     }
 
 
     public LSelect fetchLeft(String tableName, String joinId) {
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.LEFT).get(joinId),null);
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
         return this;
     }
-    public LSelect fetchLeft(String tableName, String joinId,PageData pageData) {
-        List<Predicate> predicates = this.baseDao.getPredicates(pageData);
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.LEFT).on(predicates.toArray(Predicate[]::new)).get(joinId),null);
+
+    public LSelect fetchLeft(String tableName, String joinId, PageData pageData) {
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
         return this;
     }
 
 
     public LSelect fetchRight(String tableName, String joinId) {
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.RIGHT).get(joinId),null);
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
         return this;
     }
-    public LSelect fetchRight(String tableName, String joinId,PageData pageData) {
-        List<Predicate> predicates = this.baseDao.getPredicates(pageData);
-        this.baseDao.getCb().equal(this.getBaseDao().getRoot().join(tableName, JoinType.RIGHT).on(predicates.toArray(Predicate[]::new)).get(joinId),null);
+
+    public LSelect fetchRight(String tableName, String joinId, PageData pageData) {
+        this.baseDao.getJoinTableName().add(tableName);
+        this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
         return this;
     }
 
 //-----------------------------------------------------------join------------------------------------------------------
 
     public Object findOne() {
-        if(!this.pageData.containsKey("id_eq") || this.pageData.get("id_eq") == null) {
-            throw new RuntimeException("缺少主键条件");
-        }
-        var result = this.baseDao.getInfoDtoOrT(this.pageData.get("id_eq"),this.isT,this.pageData,this.fileds);
-        if(null == result) {
-            return null;
-        }
-        if(this.isT) {
-            return result.getT();
-        }else {
-            return result.getDto();
-        }
+        return this.baseDao.getOne();
     }
 
-    public List findList()  {
-        var result = this.baseDao.getDtoOrTList(this.pageData,this.isT,this.fileds);
-        if(null == result) {
-            return null;
-        }
-        if(this.isT) {
-            return result.getTList();
-        }else {
-            return result.getDtoList();
-        }
+    public List findList() {
+        return this.baseDao.getList();
     }
 
-    public PageInfo findPage()  {
-        var result = this.baseDao.getPageInfo(this.pageData, this.isT,this.fileds);
-        return result;
+    public PageInfo findPage() {
+        return this.baseDao.getPage();
     }
-
-
 
 
     //------------------------------------------------------------where-------------------------------------------------------
 
-   public LSelect where(PageData pageData) {
-        this.pageData.setRows(pageData.getRows());
-        this.pageData.setPageIndex(pageData.getPageIndex());
-        this.pageData.setMaxRows(pageData.getMaxRows());
-        this.pageData.putAll(pageData);
+    public LSelect where(PageData pageData) {
+        this.baseDao.getPageData().setRows(pageData.getRows());
+        this.baseDao.getPageData().setPageIndex(pageData.getPageIndex());
+        this.baseDao.getPageData().setMaxRows(pageData.getMaxRows());
+        this.baseDao.getPageData().putAll(pageData);
         return this;
-   }
+    }
 
     public LSelect eq(String filed, Object value) {
-        this.pageData.put(filed+"_eq", value);
+        filed += "_eq";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
 
     public LSelect like(String filed, String value) {
-        this.pageData.put(filed+"_like", value);
+        filed += "_like";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
     public LSelect ge(String filed, Number value) {
-        this.pageData.put(filed+"_ge", value);
+        filed += "_ge";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
 
     public LSelect gt(String filed, Number value) {
-        this.pageData.put(filed+"_gt", value);
+        filed += "_gt";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
 
     public LSelect le(String filed, Number value) {
-        this.pageData.put(filed+"_le", value);
+        filed += "_le";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
 
     public LSelect lt(String filed, Number value) {
-        this.pageData.put(filed+"_lt", value);
+        filed += "_lt";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
 
     public LSelect in(String filed, List value) {
-        this.pageData.put(filed+"_in", value);
+        filed += "_in";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
     public LSelect notIn(String filed, List value) {
-        this.pageData.put(filed+"_notIn", value);
+        filed += "_notIn";
+        this.baseDao.getPageData().put(filed,value);
         return this;
     }
 
-    public LSelect or(PageData pageData){
-        this.baseDao.setOrPageData(pageData);
+    public LSelect sql(String sql, Object[] values, Type[] types) {
+        return this;
+    }
+
+    public LSelect or(PageData pageData) {
+        this.baseDao.getOrPageData().add(pageData);
         return this;
     }
 

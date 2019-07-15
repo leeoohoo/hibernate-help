@@ -1,9 +1,7 @@
 package com.learn.hibernate.base;
 
+import com.learn.hibernate.utils.SpringUtil;
 import lombok.Data;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.query.Query;
-import org.hibernate.query.QueryProducer;
 
 @Data
 public class LCustomize {
@@ -16,6 +14,7 @@ public class LCustomize {
 
 
     public LCustomizeSelect find(String sqlString) {
+        this.baseDao = (BaseDao) SpringUtil.getBean("baseDao");
         return new LCustomizeSelect(this.baseDao,sqlString);
     }
 

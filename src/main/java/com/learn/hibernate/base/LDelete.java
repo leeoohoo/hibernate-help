@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class LDelete {
 
-    private  BaseDao baseDao;
+    private BaseDao baseDao;
 
 
 

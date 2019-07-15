@@ -116,7 +116,7 @@ public class LCustomizeSelect {
         for(String filed : fileds) {
             newsb.append(filed + " as "+ RandomStringUtils.randomAlphanumeric(7)+ ",");
         }
-        var alias = MyStringUtils.removeStringLastString(newsb,",");
+        var alias = MyStringUtils.removeStringLastString(newsb.toString(),",");
         this.sql = sb.replace(sb.indexOf("select")+"select".length(), sb.indexOf(" from"),alias).toString();
     }
 

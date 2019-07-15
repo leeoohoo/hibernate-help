@@ -1,28 +1,24 @@
 package com.learn.hibernate.base;
 
 import com.learn.hibernate.annotation.Ignore;
-import com.learn.hibernate.annotation.Nojoin;
-import com.learn.hibernate.domian.DtoOrT;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
-import com.learn.hibernate.utils.ClassUtils;
+import com.learn.hibernate.enums.OrderType;
 import com.learn.hibernate.utils.MyStringUtils;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.query.Query;
+import org.hibernate.criterion.*;
+import org.hibernate.sql.JoinType;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
-import javax.persistence.criteria.*;
 import java.beans.IntrospectionException;
 import java.lang.reflect.*;
 import java.util.*;
@@ -33,14 +29,14 @@ import java.util.*;
  * @param <D>
  * @author lee
  */
-@Data
-@AllArgsConstructor
+
 @Component
 @PropertySource("classpath:my_base_dao.properties")
+@Scope(scopeName = "prototype")
+@Data
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Slf4j
-@Scope(scopeName = "prototype")
-public class BaseDao<T, DTO, D> {
+public  class BaseDao<T, DTO, D>  {
 
     @Value("${mybasedao.entity}")
     private String entityString;
@@ -51,23 +47,41 @@ public class BaseDao<T, DTO, D> {
     @Value("${mybasedao.dto.suffix}")
     private String dtoSuffix;
 
-    private Root joinRoot;
-
     private String entityName;
 
-    private CriteriaBuilder cb;
-
-    private CriteriaQuery cq;
+    private boolean isT = true;
 
     private boolean isGroup;
-
-    private Root root;
 
     private Class<T> tClass;
 
     private Class<DTO> dtoClass;
 
-    private PageData orPageData;
+    private List<PageData> orPageData ;//or括号中的条件
+
+    private PageData pageData ;//查询条件
+
+    private Class resultClass;//最终获得的对象类型
+
+    private ProjectionList projectionList;
+
+    private StringBuilder groupFileds;
+
+    private Map<String, OrderType> orderTypeMap ;
+
+    private List<Criterion> criterionList ;
+
+    private Map<String, JoinType> joinTypeMap;
+
+    private Map<String, SimpleExpression> stringSimpleExpressionMap ;
+
+    private String selectFileds;
+
+    private DetachedCriteria criteria;
+
+    private boolean isPage;
+
+    private List<String> joinTableName;
 
     @Autowired
     private BaseQuery baseQuery;
@@ -76,31 +90,45 @@ public class BaseDao<T, DTO, D> {
     public BaseDao() {
     }
 
-    public void init(String clazz) throws ClassNotFoundException {
+    public void init(String clazz) {
         String dtoName = clazz + dtoSuffix;
-        this.entityName = clazz;
-        initTClz(clazz);
+        BaseDao.this.entityName = clazz;
+        try {
+            initTClz(clazz);
+        } catch (ClassNotFoundException e) {
+            log.error(clazz + ":找不到该实体类");
+        }
         initDtoClz(dtoName);
-        this.baseQuery = baseQuery.init(this.tClass);
-        initBQR();
+        BaseDao.this.baseQuery = baseQuery.init(BaseDao.this.tClass);
+        this.initSqlRely();
     }
 
-    public synchronized void init(Class<T> clazz) {
-        this.tClass = clazz;
+    public  void init(Class<T> clazz) {
+        BaseDao.this.tClass = clazz;
         var tableName = MyStringUtils.subStringLastChar(clazz.getName(), '.');
-        this.entityName = tableName;
+        BaseDao.this.entityName = tableName;
         String dtoName = tableName + dtoSuffix;
         initDtoClz(dtoName);
-        this.baseQuery = baseQuery.init(this.tClass);
-        initBQR();
+        BaseDao.this.baseQuery = baseQuery.init(BaseDao.this.tClass);
+        this.initSqlRely();
+    }
+
+    private void initSqlRely () {
+        this.joinTypeMap = new HashMap<>();
+        this.orderTypeMap = new HashMap<>();
+        this.stringSimpleExpressionMap = new HashMap<>();
+        this.groupFileds = new StringBuilder();
+        this.joinTableName = new ArrayList<>();
+        this.orPageData = new ArrayList<>();
+        this.pageData = new PageData();
     }
 
     public void initTClz(String clazz) throws ClassNotFoundException {
-        var packagelist = Arrays.asList(this.entityString.split(","));
+        var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
         int count = 0;
         for (String str : packagelist) {
             try {
-                this.tClass = (Class<T>) Class.forName(str + "." + clazz);
+                BaseDao.this.tClass = (Class<T>) Class.forName(str + "." + clazz);
             } catch (ClassNotFoundException e) {
                 count++;
                 if (packagelist.size() <= count) {
@@ -111,7 +139,7 @@ public class BaseDao<T, DTO, D> {
     }
 
     public Class getMyClass(String clazz) throws ClassNotFoundException {
-        var packagelist = Arrays.asList(this.entityString.split(","));
+        var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
         int count = 0;
         Class clz = null;
         for (String str : packagelist) {
@@ -129,7 +157,7 @@ public class BaseDao<T, DTO, D> {
 
     public void initDtoClz(String dtoName) {
         int count = 0;
-        var packagelist = Arrays.asList(this.dtoString.split(","));
+        var packagelist = Arrays.asList(BaseDao.this.dtoString.split(","));
         for (String str : packagelist) {
             try {
                 this.dtoClass = (Class<DTO>) Class.forName(str + "." + dtoName);
@@ -140,24 +168,12 @@ public class BaseDao<T, DTO, D> {
     }
 
     public void init(Class<T> entityClz, Class<DTO> dtoClz) {
-        this.entityName = MyStringUtils.subStringLastChar(entityClz.getName(), '.');
-        this.tClass = entityClz;
-        this.dtoClass = dtoClz;
-        this.baseQuery = baseQuery.init(this.tClass);
-        initBQR();
+        BaseDao.this.entityName = MyStringUtils.subStringLastChar(entityClz.getName(), '.');
+        BaseDao.this.tClass = entityClz;
+        BaseDao.this.dtoClass = dtoClz;
+        BaseDao.this.baseQuery = baseQuery.init(this.tClass);
     }
 
-
-    private void initBQR() {
-        this.cb = this.baseQuery.getSession().getCriteriaBuilder();
-        this.cq = this.cb.createTupleQuery();
-        this.root = this.cq.from(tClass);
-    }
-
-
-    public Query getQuery() {
-        return this.baseQuery.getSession().createQuery(cq);
-    }
 
     public D add(T t) {
         Session session = this.baseQuery.getSession();
@@ -181,9 +197,17 @@ public class BaseDao<T, DTO, D> {
 
     }
 
-    public Boolean updateById(T t, D id) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        var result = this.baseQuery.asUpdate().set(t).where().eq("id", id).updateExecution();
-        return result > 0;
+    public Boolean updateById(T t, D id) {
+        Integer result = null;
+        try {
+            result = this.baseQuery.asUpdate().set(t).where().eq("id", id).updateExecution();
+            return result > 0;
+        } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
+            e.printStackTrace();
+            log.error(t.getClass().getName() + "转换map失败");
+        } finally {
+            return false;
+        }
     }
 
     public Integer delete(String where) {
@@ -228,7 +252,7 @@ public class BaseDao<T, DTO, D> {
 
 
     public Integer deleteByIsDeleted(D id) {
-        return this.baseQuery.where().eq("id", id).asUpdate().set("isDelete", 1).updateExecution();
+        return BaseDao.this.baseQuery.where().eq("id", id).asUpdate().set("isDelete", 1).updateExecution();
     }
 
     protected PageData putId(D id, PageData pageData) {
@@ -241,709 +265,339 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public DTO getInfoDto(D id, PageData pageData, String... fields) {
-        var query = getInfoQuery(false, putId(id, pageData), fields);
-        Tuple result = (Tuple) query.getSingleResult();
-        return getDto(result);
+    private Criteria getResult() {
+        this.initCriteria();
+        Session session = BaseDao.this.baseQuery.getSession();
+        return BaseDao.this.criteria.getExecutableCriteria(session);
     }
 
-
-    public DTO getInfoDto(D id, String... fields) {
-        var query = getInfoQuery(false, null, fields);
-        Tuple result = (Tuple) query.getSingleResult();
-        return getDto(result);
+    private Criteria getPageResult() {
+        this.isPage = true;
+        this.initCriteria();
+        this.isPage = false;
+        this.initPageSelect();
+        this.criteria.setResultTransformer(Transformers.aliasToBean(PageInfo.class));
+        Session session = this.baseQuery.getSession();
+        return this.criteria.getExecutableCriteria(session);
     }
 
-
-    public DTO getInfoDto(D id, String fields) {
-        return getInfoDto(id, fields.split(","));
+    public Object getOne() {
+        return BaseDao.this.getResult().uniqueResult();
     }
 
-
-    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData) {
-        var query = getInfoQuery(isT, putId(id, pageData));
-        Tuple result = (Tuple) query.uniqueResult();
-        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if (isT) {
-            dtoOrT.setT(getT(result));
-        } else {
-            dtoOrT.setDto(getDto(result));
-        }
-        return dtoOrT;
+    public List getList() {
+        this.getResult();
+        return BaseDao.this.getResult().list();
     }
 
-    public DtoOrT getInfoDtoOrT(D id, boolean isT, PageData pageData, String... fileds) {
-        var query = getInfoQuery(isT, putId(id, pageData), fileds);
-        Tuple result = (Tuple) query.uniqueResult();
-        if (null == result) {
-            return null;
-        }
-        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if (isT) {
-            dtoOrT.setT(getT(result));
-        } else {
-            dtoOrT.setDto(getDto(result));
-        }
-        return dtoOrT;
-    }
-
-    /**
-     * 没有条件的getInfo
-     *
-     * @param id
-     * @param isT
-     * @return
-     */
-    public DtoOrT getInfoDtoOrT(D id, boolean isT) {
-        var query = getInfoQuery(isT, putId(id, null));
-        Tuple result = (Tuple) query.uniqueResult();
-        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if (isT) {
-            dtoOrT.setT(getT(result));
-        } else {
-            dtoOrT.setDto(getDto(result));
-        }
-        return dtoOrT;
-    }
-
-    private Predicate[] getPredicateArray(PageData pageData) {
-        List<Predicate> list = getPredicates(pageData);
-        if (this.orPageData != null && this.orPageData.size() > 0) {
-            var orPredicates = getPredicates(this.orPageData);
-            list.add(this.cb.or(orPredicates.toArray(Predicate[]::new)));
-        }
-        return list.toArray(Predicate[]::new);
-    }
-
-    public Query getInfoQuery(boolean isT, PageData pageData, String... fileds) {
-        Predicate[] predicates = getPredicateArray(pageData);
-
-        if (null != predicates && predicates.length > 0) {
-            this.getCq().where(predicates);
-        }
-        if (null == fileds || fileds.length <= 0) {
-            selectFilds(isT);
-        } else {
-            selectFilds(fileds);
-        }
-        var query = getQuery();
-        return query;
-    }
-
-    /**
-     * @param pageData
-     * @param isT
-     * @return
-     */
-    public DtoOrT getDtoOrTList(PageData pageData, boolean isT) {
-        var query = getListQuery(pageData, isT);
-        List<Tuple> result = query.getResultList();
-        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if (null == result) {
-            return dtoOrT;
-        }
-        if (isT) {
-            dtoOrT.setTList(getList(result));
-        } else {
-            dtoOrT.setDtoList(getDtoList(result));
-        }
-        return dtoOrT;
-    }
-
-    public DtoOrT getDtoOrTList(PageData pageData, boolean isT, String... fileds) {
-        var query = getListQuery(pageData, isT, fileds);
-        List<Tuple> result = query.getResultList();
-        if (null == result) {
-            return null;
-        }
-        DtoOrT<DTO, T> dtoOrT = new DtoOrT<DTO, T>();
-        if (null == result) {
-            return dtoOrT;
-        }
-        if (isT) {
-            dtoOrT.setTList(getList(result));
-        } else {
-            dtoOrT.setDtoList(getDtoList(result));
-        }
-        return dtoOrT;
-    }
-
-    /**
-     * 获取DTO列表
-     *
-     * @param pageData
-     * @return
-     */
-    public List<DTO> getDtoList(PageData pageData, String... fileds) {
-        var query = getListQuery(pageData, false, fileds);
-        List<Tuple> result = query.getResultList();
-        return getDtoList(result);
-    }
-
-
-    /**
-     * 获取分页信息
-     *
-     * @param pageData
-     * @return
-     */
-    public PageInfo getPageInfo(PageData pageData, boolean isT) {
-        var query = getListQuery(pageData, isT);
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
-        query.setFirstResult(pageData.getMaxRows());
-        query.setMaxResults(pageInfo.getPageSize());
-        var result = getDtoList(query.getResultList());
-        pageInfo.setList(result);
-        return pageInfo;
-    }
-
-    /**
-     * 获取分页信息
-     *
-     * @param pageData
-     * @param fileds   需要查询的字断
-     * @return
-     */
-    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) {
-        var query = getListQuery(pageData, isT, fileds);
-        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
-        query.setFirstResult(pageData.getMaxRows());
-        query.setMaxResults(pageInfo.getPageSize());
-        var result = getDtoList(query.getResultList());
-        pageInfo.setList(result);
+    public PageInfo getPage() {
+        Criteria pageResult = BaseDao.this.getPageResult();
+        PageInfo pageInfo = (PageInfo) pageResult.uniqueResult();
+        pageInfo.init();
+        this.criteria = DetachedCriteria.forClass(this.tClass);
+        Criteria result = this.getResult();
+        result.setFirstResult(this.pageData.getPageIndex());
+        result.setMaxResults(this.pageData.getMaxRows());
+        pageInfo.setList(result.list());
         return pageInfo;
     }
 
 
-    public Query getListQuery(PageData pageData, boolean isT, String... fileds) {
-        var p = getPredicateArray(pageData);
-        if (null != p && p.length > 0) {
-            cq.where(p);
+    /**
+     * 初始化sql
+     */
+    private void initCriteria() {
+        this.criteria = DetachedCriteria.forClass(this.tClass);
+        if(!this.isPage) {
+            this.initSelect();//初始化查询字断
         }
-        if (fileds == null || fileds.length <= 0) {
-            selectFilds(isT);
+        this.initJoin();
+        this.initWhere(this.pageData);//初始化一般查询条件
+        this.orWhere();//初始化or条件
+        this.initOrder();
+        this.initResult();
+
+    }
+
+    /**
+     * 初始化查找总数
+     */
+    private void initPageSelect() {
+        BaseDao.this.projectionList = Projections.projectionList();
+        BaseDao.this.projectionList.add(Projections.count("id").as("count"));
+        BaseDao.this.criteria.setProjection(projectionList);
+    }
+
+    /**
+     * 初始化最终结果对象
+     */
+    private void initResult() {
+        if (null != resultClass) {
+            if (resultClass.getName().equals(new HashMap<>().getClass().getName())) {
+                BaseDao.this.criteria.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+            } else if (resultClass.getName().equals(new ArrayList<>().getClass().getName())) {
+                BaseDao.this.criteria.setResultTransformer(Transformers.TO_LIST);
+            } else {
+                BaseDao.this.criteria.setResultTransformer(Transformers.aliasToBean(resultClass));
+            }
+        } else if (isT) {
+            BaseDao.this.criteria.setResultTransformer(Transformers.aliasToBean(this.tClass));
         } else {
-            selectFilds(fileds);
+            BaseDao.this.criteria.setResultTransformer(Transformers.aliasToBean(this.dtoClass));
         }
-        var query = getQuery();
-        return query;
+        System.out.println("initResult");
     }
 
 
     /**
-     * 获取DTO
-     *
-     * @param list
-     * @return
+     * 初始化排序
      */
-    public List<DTO> getDtoList(List<Tuple> list) {
-        List<DTO> result = new ArrayList<>();
-        if (null == list) {
-            return result;
-        }
-        list.forEach(
-                r -> {
-                    DTO dto = getDto(r);
-                    result.add(dto);
+    private void initOrder() {
+        this.orderTypeMap.forEach(
+                (k, v) -> {
+                    switch (v) {
+                        case ASC:
+                            BaseDao.this.criteria.addOrder(Order.asc(k));
+                            break;
+                        case DESC:
+                            BaseDao.this.criteria.addOrder(Order.desc(k));
+                            break;
+                    }
                 }
         );
-        return result;
+        System.out.println("initOrder");
+    }
+
+
+    /**
+     * 初始化join关联
+     */
+    private void initJoin() {
+        for(Map.Entry<String,JoinType> entry : BaseDao.this.joinTypeMap.entrySet()) {
+            var k = entry.getKey();
+            var v = entry.getValue();
+            SimpleExpression simpleExpression = BaseDao.this.stringSimpleExpressionMap.get(k);
+            int i = k.lastIndexOf(".");
+            String substring = "";
+            if(i < 0) {
+                substring = k;
+            }else {
+                substring = k.substring(i+1);
+            }
+            if (null != simpleExpression) {
+                BaseDao.this.criteria.createAlias(k, substring, v, simpleExpression);
+            } else {
+                BaseDao.this.criteria.createAlias(k, substring, v);
+            }
+        }
+        System.out.println("initJoin");
     }
 
     /**
-     * 获取DTO
+     * 初始化一般搜索条件
      *
-     * @param list
-     * @return
+     * @param pageData
      */
-    public List<T> getList(List<Tuple> list) {
-        List<T> result = new ArrayList<>();
-        if (null == list) {
-            return result;
+    public Criterion initWhere(PageData pageData) {
+        this.criterionList = new ArrayList<>();
+        Criterion criterion = null;
+        for (Map.Entry<String, Object> m : pageData.getMap().entrySet()) {
+            var k = m.getKey();
+            var v = m.getValue();
+            var stes = k.split("_");
+            if (stes.length > 1) {
+                switch (stes[1]) {
+                    case "like":
+                        if (v != null && !"".equals(v.toString().trim())) {
+                            criterion = Restrictions.like(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+
+                        break;
+                    case "eq":
+                        if (v != null) {
+                            criterion = Restrictions.eq(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+                        break;
+                    case "gt":
+                        if (v != null) {
+                            criterion = Restrictions.gt(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+                        break;
+                    case "ge":
+                        if (v != null) {
+                            criterion = Restrictions.ge(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+                        break;
+                    case "le":
+                        if (v != null) {
+                            criterion = Restrictions.le(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+                        break;
+                    case "lt":
+                        if (v != null) {
+                            criterion = Restrictions.lt(stes[0], v);
+                            BaseDao.this.criteria.add(criterion);
+                            BaseDao.this.criterionList.add(criterion);
+                        }
+                        break;
+                    case "in":
+                        if (v != null) {
+                            var list = (List) v;
+                            if (list.size() > 0) {
+                                criterion = Restrictions.in(stes[0], v);
+                                BaseDao.this.criteria.add(criterion);
+                                BaseDao.this.criterionList.add(criterion);
+                            }
+                        }
+
+                        break;
+                    case "notIn":
+                        if (v != null) {
+                            var list = (List) v;
+                            if (list.size() > 0) {
+                                Criterion in = Restrictions.in(stes[0], v);
+                                criterion = Restrictions.not(in);
+                                BaseDao.this.criteria.add(criterion);
+                                BaseDao.this.criterionList.add(criterion);
+                            }
+                        }
+                        break;
+
+                }
+            }
+
         }
-        list.forEach(
-                r -> {
-                    T t = getT(r);
-                    result.add(t);
+        System.out.println("initwhere");
+        return criterion;
+    }
+
+    //初始化or条件
+    private void orWhere() {
+        this.orPageData.forEach(
+                p -> {
+                    initWhere(p);
+                    var or = Restrictions.or(this.criterionList.toArray(Criterion[]::new));
+                    BaseDao.this.criteria.add(or);
                 }
         );
-        return result;
-    }
-
-    public T getT(Tuple tuple) {
-        return (T) map2Obj(getResultMap(tuple), tClass);
-    }
-
-    public DTO getDto(Tuple tuple) {
-        if (null == this.dtoClass) {
-            throw new RuntimeException("未找到相应的dto");
-        }
-        return (DTO) map2Obj(getResultMap(tuple), dtoClass);
-    }
-
-    /**
-     * 根据结果中某一个元素获取对象map
-     *
-     * @param tuple
-     * @return
-     */
-    public Map<String, Object> getResultMap(Tuple tuple) {
-        Map<String, Object> map = new HashMap<>();
-        if (tuple == null) {
-            return map;
-        }
-        for (int i = 0; i < tuple.getElements().size(); i++) {
-            var object = tuple.getElements();
-            var alias = object.get(i).getAlias();
-            var value = tuple.get(i);
-            map.put(alias, value);
-        }
-        return map;
+        System.out.println("orwhere");
     }
 
 
     /**
      * 初始化查询字断
-     *
-     * @param fileds
      */
-    public void selectFilds(String... fileds) {
-        List<Selection> selections = new ArrayList<>();
-        Arrays.asList(fileds).forEach(
-                f -> {
-                    if (f.contains(".")) {
-                        var strs = f.split("\\.");
-                        selections.add(getSelection(strs));
-                    } else {
-                        selections.add(this.root.get(f).alias(f));
-                    }
-                }
-        );
-        cq.multiselect(selections);
-    }
-
-    public Map<String, Boolean> getFildsName(Field[]... fields) {
-        Map<String, Boolean> fildsName = new HashMap<>();
-        if (fields.length <= 0) {
-            return fildsName;
-        }
-        var fieldss = Arrays.asList(fields);
-        fieldss.forEach(
-                fs -> {
-                    Arrays.asList(fs).forEach(
-                            f -> {
-                                var ignore = f.getAnnotation(Ignore.class);
-                                if (null == ignore) {
-                                    fildsName.put(f.getName(), getIsJoin(f));
-                                } else {
-                                    if (!ignore.value()) {
-                                        fildsName.put(f.getName(), getIsJoin(f));
-                                    }
-                                }
-
-                            }
-                    );
-                }
-        );
-
-        return fildsName;
-    }
-
-
-    /**
-     * 获取是否需要自动关联表
-     *
-     * @param field
-     * @return
-     */
-    private boolean getIsJoin(Field field) {
-        var noJoin = field.getAnnotation(Nojoin.class);
-        if (null == noJoin) {
-            return false;
+    private void initSelect() {
+        this.projectionList = Projections.projectionList();
+        List<String> fileds = new ArrayList<>();
+        if (this.isT) {
+            fileds = getSelectFileds(this.tClass);
         } else {
-            return noJoin.value();
+            fileds = getSelectFileds(this.dtoClass);
         }
-    }
-
-    /**
-     * 初始化需要查询的字段
-     *
-     * @param isT
-     */
-    public void selectFilds(boolean isT) {
-        List<Selection> selections = new ArrayList<>();
-        Field[] fields = null;
-        Map<String, Boolean> fildsNames = null;
-        if (isT) {
-            var childFields = tClass.getDeclaredFields();
-            var superTClassFields = tClass.getSuperclass().getDeclaredFields();
-            fildsNames = getFildsName(childFields, superTClassFields);
-        } else {
-            fields = dtoClass.getDeclaredFields();
-            fildsNames = getFildsName(fields);
-        }
-        fildsNames.forEach(
-                (k, v) -> {
-                    Selection selection = null;
-                    var strs = getFildsUpChar(k, v);
-                    if (strs.length == 1) {
-                        selection = this.root.get(k).alias(k);
-                        selections.add(selection);
+        fileds.forEach(
+                filed -> {
+                    if (BaseDao.this.groupFileds.toString().contains(filed)) {
+                        BaseDao.this.projectionList.add(Projections.groupProperty(filed).as(getAlias(filed)));
                     } else {
-                        selection = getSelection(strs);
-                        selections.add(selection);
+                        BaseDao.this.projectionList.add(Projections.property(filed).as(getAlias(filed)));
                     }
                 }
         );
-        cq.multiselect(selections);
+        this.criteria.setProjection(BaseDao.this.projectionList);
+        System.out.println("initselect");
     }
 
     /**
-     * 设置排序
+     * 获取需要查询的字断
      *
-     * @param fields
+     * @param clazz
+     * @return
      */
-    public void setOrderBy(String... fields) {
-        List<Order> orders = new ArrayList<>();
-        if (fields.length > 0) {
-            var fieldList = Arrays.asList(fields);
-            for (String str : fieldList) {
-                var strs = str.split(",");
-                if (strs.length > 1) {
-                    switch (strs[1]) {
-                        case "asc":
-                            orders.add(this.cb.asc(getPath(strs[0])));
-                            break;
-                        case "desc":
-                            orders.add(this.cb.desc(getPath(strs[0])));
-                            break;
+    private List<String> getSelectFileds(Class clazz) {
+        List<String> fields = new ArrayList<>();
+        //如果有自定义的查询字断则直接返回自定义的
+        if (null != BaseDao.this.selectFileds && BaseDao.this.selectFileds.length() > 0) {
+            String[] strs = this.selectFileds.split(",");
+            Collections.addAll(fields, strs);
+            return fields;
+        }
+        //没有的话则根据类型来获取
+        Field[] declaredFields = clazz.getDeclaredFields();
+        Field[] superClassFields = clazz.getSuperclass().getDeclaredFields();
+        List<Field> list = new ArrayList<>();
+        if (null != superClassFields && superClassFields.length > 0) {
+            Collections.addAll(list, superClassFields);
+        }
+        Collections.addAll(list, declaredFields);
+        list.forEach(
+                field -> {
+                    Ignore annotation = field.getAnnotation(Ignore.class);
+                    if (null == annotation) {
+                        var fieldStr = field.getName();
+                        fields.add(getFields(fieldStr));
                     }
                 }
-            }
-
-        }
-        this.cq.orderBy(orders);
-    }
-
-    /**
-     * 设置groupBy
-     *
-     * @param fields
-     */
-    public void setGroupBy(String... fields) {
-        List<Path> paths = new ArrayList<>();
-        Arrays.asList(fields).forEach(
-                f -> {
-                    var p = getPath(f);
-                    paths.add(p);
-                }
         );
-        this.cq.groupBy(paths);
-        this.isGroup = true;
-    }
 
-
-    public String[] getFildsUpChar(String str, Boolean ignore) {
-        StringBuilder sb = new StringBuilder();
-        if (ignore) {
-            return str.split("\\.");
-        }
-        char[] chars = str.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            char c = chars[i];
-            if (Character.isUpperCase(c)) {
-
-                sb.append("." + String.valueOf(c).toLowerCase());
-            } else {
-                sb.append(c);
-            }
-        }
-
-        var strs = sb.toString().split("\\.");
-        for (int i = 0; i < strs.length - 1; i++) {
-            var s = strs[i];
-            if (!isEntity(s)) {
-                return str.split("\\.");
-            }
-        }
-        return strs;
-
+        return fields;
     }
 
     /**
-     * 用来检测该实体类是不是存在
+     * 获取需要查询的字断并判断需不需要连表
      *
-     * @param entityName
+     * @param filedName
      * @return
      */
-    private boolean isEntity(String entityName) {
-        entityName = MyStringUtils.upperCase(entityName);
-        var packagelist = Arrays.asList(this.entityString.split(","));
-        int count = 0;
-        for (String str : packagelist) {
-            try {
-                var clz = (Class<T>) Class.forName(str + "." + entityName);
-                if (null != clz) {
-                    return true;
-                }
-            } catch (ClassNotFoundException e) {
-                count++;
-                if (packagelist.size() <= count) {
-                    return false;
-                }
+    private String getFields(String filedName) {
+        for (var str : BaseDao.this.joinTableName) {
+            int index = filedName.indexOf(str);
+            if (index == 0) {
+                String substring = filedName.substring(str.length());
+                substring = MyStringUtils.upperCase(substring);
+                String s = str + "." + substring;
+                return s;
             }
         }
-        return true;
-    }
-
-
-    /**
-     * 获取查询字断
-     *
-     * @param strings
-     * @return
-     */
-    public Selection getSelection(String... strings) {
-        switch (strings.length) {
-            case 2:
-                return this.root.get(strings[0]).get(strings[1]).alias(getAlias(strings));
-            case 3:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).alias(getAlias(strings));
-            case 4:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).alias(getAlias(strings));
-            case 5:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).alias(getAlias(strings));
-            case 6:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]).alias(getAlias(strings));
-            case 7:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]).get(strings[6]).alias(getAlias(strings));
-        }
-        return null;
-    }
-
-    public Path getPath(String... strings) {
-        switch (strings.length) {
-            case 1:
-                return this.root.get(strings[0]);
-            case 2:
-                return this.root.get(strings[0]).get(strings[1]);
-            case 3:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]);
-            case 4:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]);
-            case 5:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]);
-            case 6:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]);
-            case 7:
-                return this.root.get(strings[0]).get(strings[1]).get(strings[2]).get(strings[3]).get(strings[4]).get(strings[5]).get(strings[6]);
-        }
-        return null;
-    }
-
-
-    public String getAlias(String... strings) {
-        var alias = new StringBuilder();
-        for (int i = 0; i < strings.length; i++) {
-            var str = strings[i];
-            if (i == 0) {
-                alias.append(str);
-            } else {
-                alias.append(oneCharsToUp(str));
-            }
-        }
-        return alias.toString();
+        return filedName;
     }
 
     /**
-     * 将第一个字母变大写
+     * 根据查询字断获取别名
      *
      * @param str
      * @return
      */
-    public String oneCharsToUp(String str) {
-        StringBuilder sb = new StringBuilder(str);
-        sb.replace(0, 1, String.valueOf(sb.charAt(0)).toUpperCase());
+    private String getAlias(String str) {
+        StringBuilder sb = new StringBuilder();
+        char[] chars = str.toCharArray();
+        boolean flag = false;
+        for (var c : chars) {
+            if (c == '.') {
+                flag = true;
+            } else {
+                if (flag) {
+                    sb.append(Character.toUpperCase(c));
+                } else {
+                    sb.append(c);
+                }
+                flag = false;
+            }
+
+        }
         return sb.toString();
     }
 
-
-    public Object map2Obj(Map<String, Object> map, Class<?> clz) {
-        Object obj = null;
-        try {
-            obj = clz.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        Field[] declaredFields = obj.getClass().getDeclaredFields();
-        Field[] superFields = obj.getClass().getSuperclass().getDeclaredFields();
-        if (null != declaredFields && declaredFields.length > 0) {
-            setFiledValue(map, obj, declaredFields);
-        }
-        if (null != superFields && superFields.length > 0) {
-            setFiledValue(map, obj, superFields);
-        }
-
-        return obj;
-    }
-
-    private void setFiledValue(Map<String, Object> map, Object obj, Field[] fields) {
-        for (Field field : fields) {
-            int mod = field.getModifiers();
-            if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
-                continue;
-            }
-            field.setAccessible(true);
-            try {
-                field.set(obj, map.get(field.getName()));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    public List<Predicate> getPredicates(PageData pageData) {
-        List<Predicate> ps = new ArrayList<>();
-        if (pageData == null) {
-            return ps;
-        }
-        pageData.getMap().forEach(
-                (k, v) -> {
-                    var stes = k.split("_");
-                    if (stes.length > 1) {
-                        switch (stes[1]) {
-                            case "like":
-                                if (v != null && !"".equals(v.toString().trim())) {
-                                    ps.add(getPredicateLike(stes[0], v.toString()));
-                                }
-                                break;
-                            case "eq":
-                                if (v != null) {
-                                    ps.add(getPredicateEq(stes[0], v));
-                                }
-                                break;
-                            case "gt":
-                                if (v != null) {
-                                    ps.add(getPredicateGt(stes[0], (Number) v));
-                                }
-                                break;
-                            case "ge":
-                                if (v != null) {
-                                    ps.add(getPredicateGe(stes[0], (Number) v));
-                                }
-                                break;
-                            case "le":
-                                if (v != null) {
-                                    ps.add(getPredicateLe(stes[0], (Number) v));
-                                }
-                                break;
-                            case "lt":
-                                if (v != null) {
-                                    ps.add(getPredicateLt(stes[0], (Number) v));
-                                }
-                                break;
-                            case "in":
-                                if (v != null) {
-                                    var list = (List) v;
-                                    if (list.size() > 0) {
-                                        ps.add(getPredicateIn(stes[0], (List) v));
-                                    }
-                                }
-
-                                break;
-                            case "notIn":
-                                if (v != null) {
-                                    var list = (List) v;
-                                    if (list.size() > 0) {
-                                        ps.add(getPredicateNotIn(stes[0], (List) v));
-                                    }
-                                }
-                                break;
-
-                        }
-                    }
-
-                }
-        );
-        return ps;
-    }
-
-
-    public Predicate getPredicateLike(String fildName, String value) {
-        return getCb().like(getPath(fildName), value);
-    }
-
-    public Predicate getPredicateEq(String fildName, Object value) {
-        return getCb().equal(getPath(fildName), value);
-    }
-
-
-    public Predicate getPredicateGe(String fildName, Number value) {
-        return getCb().ge(getPath(fildName), value);
-    }
-
-    public Predicate getPredicateGt(String fildName, Number value) {
-        return getCb().gt(getPath(fildName), value);
-    }
-
-    public Predicate getPredicateLe(String fildName, Number value) {
-        return getCb().le(getPath(fildName), value);
-    }
-
-    public Predicate getPredicateLt(String fildName, Number value) {
-        return getCb().lt(getPath(fildName), value);
-    }
-
-    public Predicate getPredicateIn(String fildName, List value) {
-        var in = getCb().in(getPath(fildName));
-        value.forEach(in::value);
-        return in;
-    }
-
-    public Predicate getPredicateNotIn(String fildName, List value) {
-        var in = getCb().in(getPath(fildName));
-        value.forEach(in::value);
-        var notIn = getCb().not(in);
-        return notIn;
-    }
-
-    public Path getPath(String filedName) {
-        Path path = null;
-        if (filedName.contains(".")) {
-            var strs = filedName.split("\\.");
-            path = getPath(strs);
-        } else {
-            var strs = filedName.split("\\.");
-            path = getPath(strs);
-        }
-        return path;
-    }
-
-
-    public String getAlisdName(String name) {
-        if (name.contains(".")) {
-            StringBuilder stringBuilder = new StringBuilder();
-            boolean flag = false;
-            for (char b : name.toCharArray()) {
-                if (b == '.') {
-                    flag = true;
-                } else {
-                    if (flag) {
-                        stringBuilder.append(String.valueOf(b).toUpperCase());
-                        flag = false;
-                    } else {
-                        stringBuilder.append(b);
-                    }
-                }
-            }
-            return stringBuilder.toString();
-        } else {
-            return name;
-        }
-    }
 
 
 }

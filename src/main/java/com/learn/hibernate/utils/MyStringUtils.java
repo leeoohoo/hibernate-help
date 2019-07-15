@@ -37,7 +37,7 @@ public class  MyStringUtils {
 
 
 
-    public static synchronized String removeStringLastString(StringBuilder sb, String c){
+    public static synchronized String removeStringLastString(String sb, String c){
         return sb.substring(0,sb.lastIndexOf(c));
     }
 

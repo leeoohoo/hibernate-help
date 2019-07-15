@@ -1,5 +1,6 @@
 package com.learn.hibernate.base;
 
+import com.learn.hibernate.annotation.Ignore;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,10 @@ public class BaseQuery<T> {
     private EntityManager entityManager;
 
     private Session session;
+
+
+
+
 
 
 
@@ -54,13 +59,57 @@ public class BaseQuery<T> {
     }
 
     public Integer updateExecution(){
-        var updateSql = MyStringUtils.removeStringLastString(this.myQuery.getUpdateSql(), ",");
+        var updateSql = MyStringUtils.removeStringLastString(this.myQuery.getUpdateSql().toString(), ",");
         var sql = updateSql + this.myQuery.getWhereSql();
         log.info(sql);
         var q = this.session.createNativeQuery(sql);
         return q.executeUpdate();
     }
 
+
+    //----------------------------------------------------------find---------------------------------------------------
+
+
+    public Object findOne() {
+        var selectSql = this.myQuery.getSelectSql();
+        return null;
+    }
+
+
+
+
+
+    public BaseQuery asDto() {
+        this.myQuery.setT(false);
+        return this;
+    }
+
+
+    private String getSelectFileds() {
+        StringBuilder sb = new StringBuilder();
+        if(this.myQuery.isT()) {
+            Class c = this.myQuery.getAClass();
+            Class superClass = c.getSuperclass();
+
+        }else {
+
+        }
+        return "";
+    }
+
+
+    private String getTSelectFileds(Class c) {
+        StringBuilder sb = new StringBuilder();
+        var fileds = c.getDeclaredFields();
+        for(var f : fileds){
+            f.getAnnotation(Ignore.class);
+        }
+
+        return sb.toString();
+    }
+
+
+    //----------------------------------------------------------find---------------------------------------------------
 
 
 
@@ -99,7 +148,7 @@ public class BaseQuery<T> {
                     sb.append("'"+v+ "',");
                 }
         );
-        return MyStringUtils.removeStringLastString(sb,",");
+        return MyStringUtils.removeStringLastString(sb.toString(),",");
     }
 
 

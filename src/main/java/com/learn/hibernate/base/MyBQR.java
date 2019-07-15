@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Scope;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
+import java.util.List;
 
 /**
  * @author lee
@@ -23,6 +25,7 @@ public class MyBQR {
     private CriteriaQuery cq;
 
     private Root root;
+
 
 
 }

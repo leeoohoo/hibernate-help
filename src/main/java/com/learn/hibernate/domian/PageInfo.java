@@ -6,6 +6,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.Tuple;
+import javax.persistence.criteria.Expression;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +24,9 @@ public class PageInfo {
 
     private Integer currentPage = 0;
 
-    private Integer pageTotal = 0;
+    private Long pageTotal = 0L;
 
-    private Integer count;
+    private Long count;
 
     private List list = new ArrayList();
 
@@ -52,9 +53,9 @@ public class PageInfo {
     private void getCount(Query query, boolean isGroup) {
         List<Tuple> result = query.getResultList();
         if (result == null || result.size() <= 0) {
-            this.count = 0;
+            this.count = 0L;
         } else {
-            var count = 0;
+            var count = 0L;
             if (isGroup) {
                 count = result.size();
             } else {
@@ -63,9 +64,9 @@ public class PageInfo {
             }
             this.count = count;
         }
-        var pageTotal = 0;
+        var pageTotal = 0L;
         if (this.getCount() % this.getPageSize() > 0) {
-            pageTotal = this.getCount() / this.getPageSize() + 1;
+            pageTotal = this.getCount() / this.getPageSize() + 1L;
         } else {
             pageTotal = this.getCount() / this.getPageSize();
         }
@@ -75,9 +76,9 @@ public class PageInfo {
     private void getCount(NativeQuery query, boolean isGroup) {
         List result = query.getResultList();
         if (result == null || result.size() <= 0) {
-            this.count = 0;
+            this.count = 0L;
         } else {
-            var count = 0;
+            var count = 0L;
             if (isGroup) {
                 count = result.size();
             } else {
@@ -90,9 +91,19 @@ public class PageInfo {
             }
             this.count = count;
         }
-        var pageTotal = 0;
+        var pageTotal = 0L;
         if (this.getCount() % this.getPageSize() > 0) {
-            pageTotal = this.getCount() / this.getPageSize() + 1;
+            pageTotal = this.getCount() / this.getPageSize() + 1L;
+        } else {
+            pageTotal = this.getCount() / this.getPageSize();
+        }
+        this.pageTotal = pageTotal;
+    }
+
+    public void init() {
+        var pageTotal = 0L;
+        if (this.getCount() % this.getPageSize() > 0) {
+            pageTotal = this.getCount() / this.getPageSize() + 1L;
         } else {
             pageTotal = this.getCount() / this.getPageSize();
         }
