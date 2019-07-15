@@ -34,7 +34,8 @@ public class LSelect {
     }
 
     public LSelect asDto(Class clazz) {
-        this.baseDao.setResultClass(clazz);
+        this.baseDao.setT(false);
+        this.baseDao.setDtoClass(clazz);
         return this;
     }
 
