@@ -297,9 +297,6 @@ public  class BaseDao<T, DTO, D>  {
         this.criteria = DetachedCriteria.forClass(this.tClass);
         Criteria result = this.getResult();
         result.setFirstResult(this.pageData.getPageIndex());
-        System.out.println("maxrows"+this.pageData.getMaxRows());
-        System.out.println("rows"+this.pageData.getRows());
-        System.out.println("pageindxe"+this.pageData.getPageIndex());
         result.setMaxResults(this.pageData.getMaxRows());
         pageInfo.setList(result.list());
         return pageInfo;
@@ -348,7 +345,6 @@ public  class BaseDao<T, DTO, D>  {
         } else {
             BaseDao.this.criteria.setResultTransformer(Transformers.aliasToBean(this.dtoClass));
         }
-        System.out.println("initResult");
     }
 
 
@@ -368,7 +364,6 @@ public  class BaseDao<T, DTO, D>  {
                     }
                 }
         );
-        System.out.println("initOrder");
     }
 
 
@@ -393,7 +388,6 @@ public  class BaseDao<T, DTO, D>  {
                 BaseDao.this.criteria.createAlias(k, substring, v);
             }
         }
-        System.out.println("initJoin");
     }
 
     /**
@@ -480,7 +474,6 @@ public  class BaseDao<T, DTO, D>  {
             }
 
         }
-        System.out.println("initwhere");
         return criterion;
     }
 
@@ -493,7 +486,6 @@ public  class BaseDao<T, DTO, D>  {
                     BaseDao.this.criteria.add(or);
                 }
         );
-        System.out.println("orwhere");
     }
 
 
@@ -518,7 +510,6 @@ public  class BaseDao<T, DTO, D>  {
                 }
         );
         this.criteria.setProjection(BaseDao.this.projectionList);
-        System.out.println("initselect");
     }
 
     /**
