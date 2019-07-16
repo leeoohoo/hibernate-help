@@ -1,10 +1,18 @@
 package com.learn.hibernate.Service;
 
 import com.learn.hibernate.base.BaseDao;
+import com.learn.hibernate.base.BaseQuery;
 import com.learn.hibernate.base.LQuery;
+import com.learn.hibernate.domian.CardDto;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.entity.*;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,7 +30,8 @@ import java.util.List;
 public class EmployeeService {
 
 
-
+    @Autowired
+    BaseQuery baseQuery;
 
 
     @Transactional
@@ -155,7 +164,7 @@ public class EmployeeService {
 //        var d = select();
 //        var d = "";
 
-        var d = LQuery.find(Card.class)
+        var t = LQuery.find(Card.class)
                 .join("employee", org.hibernate.sql.JoinType.LEFT_OUTER_JOIN)
                 .followUp("organization", JoinType.LEFT_OUTER_JOIN)
                 .fetch()
@@ -167,8 +176,23 @@ public class EmployeeService {
                 .where(pageData)
                 .order("desc,lastUpdateDateTime")
                 .asDto()
-                .findPage();;
-        return d;
+                .findPage();
+        DetachedCriteria criteria = DetachedCriteria.forClass(Card.class);
+        ProjectionList projectionList = Projections.projectionList();
+        projectionList.add(Projections.property("id").as("id"));
+        projectionList.add(Projections.property("cardNo").as("cardNo"));
+        projectionList.add(Projections.property("cardSn").as("cardSn"));
+        projectionList.add(Projections.property("state").as("state"));
+        projectionList.add(Projections.property("createdUserName").as("createdUserName"));
+        criteria.setProjection(projectionList);
+        criteria.setResultTransformer(Transformers.aliasToBean(CardDto.class));
+        baseQuery.initSession();
+        Criteria executableCriteria = criteria.getExecutableCriteria(baseQuery.getSession());
+        executableCriteria.setFirstResult(1);
+        executableCriteria.setMaxResults(3);
+        var d = executableCriteria.list();
+
+        return t;
     }
 
     private class myThread extends Thread {

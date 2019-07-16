@@ -75,8 +75,8 @@ public class PageData extends HashMap implements Map {
 		if (this.containsKey("pageIndex")&&!"".equals((String)map.get("pageIndex"))) {
 //			this.setPageIndex(this.rows);
 			var pageIndex = this.GetParameterInt("pageIndex")-1;
-			this.setPageIndex(pageIndex);		//当前页
-			this.setMaxRows((pageIndex-1)*this.rows);		//起始行（但不包括第一行）
+			this.setPageIndex(pageIndex*this.rows);		//当前页
+			this.setMaxRows(this.rows);		//起始行（但不包括第一行）
 		}
 
 	}
