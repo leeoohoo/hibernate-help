@@ -5,6 +5,7 @@ import com.learn.hibernate.base.BaseQuery;
 import com.learn.hibernate.base.LQuery;
 import com.learn.hibernate.domian.CardDto;
 import com.learn.hibernate.domian.PageData;
+import com.learn.hibernate.domian.PageInfo;
 import com.learn.hibernate.entity.*;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.DetachedCriteria;
@@ -174,6 +175,7 @@ public class EmployeeService {
                         "employee.name,employee.userNo,employee.state," +
                         "organization.id,organization.name")
                 .where(pageData)
+                .in("id",Arrays.asList("1","2"))
                 .order("desc,lastUpdateDateTime")
                 .asDto()
                 .findPage();
@@ -184,15 +186,27 @@ public class EmployeeService {
         projectionList.add(Projections.property("cardSn").as("cardSn"));
         projectionList.add(Projections.property("state").as("state"));
         projectionList.add(Projections.property("createdUserName").as("createdUserName"));
-        criteria.setProjection(projectionList);
-        criteria.setResultTransformer(Transformers.aliasToBean(CardDto.class));
+        ProjectionList projectionList1 = Projections.projectionList();
+        projectionList1.add(Projections.count("id").as("count"));
+        criteria.setProjection(projectionList1);
+        criteria.add(Restrictions.in("id",Arrays.asList("1","2")));
+        criteria.setResultTransformer(Transformers.aliasToBean(PageInfo.class));
         baseQuery.initSession();
         Criteria executableCriteria = criteria.getExecutableCriteria(baseQuery.getSession());
-        executableCriteria.setFirstResult(1);
-        executableCriteria.setMaxResults(3);
-        var d = executableCriteria.list();
+//        executableCriteria.setFirstResult(1);
+//        executableCriteria.setMaxResults(3);
+        var d = executableCriteria.uniqueResult();
 
-        return t;
+//        Integer integer = LQuery.update(Card.class)
+//                .asUpdate()
+//                .set("cardSn", "fff")
+//                .where()
+//                .eq("id", 1)
+//                .in("id",Arrays.asList("1","2"))
+//                .updateExecution();
+
+
+        return d;
     }
 
     private class myThread extends Thread {

@@ -449,9 +449,9 @@ public  class BaseDao<T, DTO, D>  {
                         break;
                     case "in":
                         if (v != null) {
-                            var list = (List) v;
+                            List list = (List) v;
                             if (list.size() > 0) {
-                                criterion = Restrictions.in(stes[0], v);
+                                criterion = Restrictions.in(stes[0], list);
                                 BaseDao.this.criteria.add(criterion);
                                 BaseDao.this.criterionList.add(criterion);
                             }
@@ -462,7 +462,7 @@ public  class BaseDao<T, DTO, D>  {
                         if (v != null) {
                             var list = (List) v;
                             if (list.size() > 0) {
-                                Criterion in = Restrictions.in(stes[0], v);
+                                Criterion in = Restrictions.in(stes[0], list);
                                 criterion = Restrictions.not(in);
                                 BaseDao.this.criteria.add(criterion);
                                 BaseDao.this.criterionList.add(criterion);
