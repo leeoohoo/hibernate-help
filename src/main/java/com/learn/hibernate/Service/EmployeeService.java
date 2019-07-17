@@ -208,7 +208,7 @@ public class EmployeeService {
         var sq=LQuery.find(Employee.class)
                 .fetchLeft("organization","id")
                 .fetchLeft("department","id")
-                .fetchLeft("card","id",new PageData("card.state_eq",0))
+                .fetchLeft("card","employeeId",new PageData("card.state_eq",0))
                 .eq("isDeleted",0)
                 .asDto();
         if(pageData.get("userNo")!=null&&!pageData.get("userNo").equals("")){

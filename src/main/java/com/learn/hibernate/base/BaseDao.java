@@ -407,7 +407,6 @@ public  class BaseDao<T, DTO, D>  {
                     case "like":
                         if (v != null && !"".equals(v.toString().trim())) {
                             criterion = Restrictions.like(stes[0], v);
-
                         }
 
                         break;
@@ -463,11 +462,12 @@ public  class BaseDao<T, DTO, D>  {
                         break;
 
                 }
+                if(null != this.criteria) {
+                    BaseDao.this.criteria.add(criterion);
+                }
+                BaseDao.this.criterionList.add(criterion);
             }
-            if(null != this.criteria) {
-                BaseDao.this.criteria.add(criterion);
-            }
-            BaseDao.this.criterionList.add(criterion);
+
 
         }
         return criterion;
