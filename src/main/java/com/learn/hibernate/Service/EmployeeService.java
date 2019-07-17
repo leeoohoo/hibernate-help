@@ -165,37 +165,37 @@ public class EmployeeService {
 //        var d = select();
 //        var d = "";
 
-        var t = LQuery.find(Card.class)
-                .join("employee", org.hibernate.sql.JoinType.LEFT_OUTER_JOIN)
-                .followUp("organization", JoinType.LEFT_OUTER_JOIN)
-                .fetch()
-                .select("id,cardNo,cardSn," +
-                        "state,createdUserName,lastUpdateUserName," +
-                        "createdDateTime,lastUpdateDateTime,employeeId," +
-                        "employee.name,employee.userNo,employee.state," +
-                        "organization.id,organization.name")
-                .where(pageData)
-                .in("id",Arrays.asList("1","2"))
-                .order("desc,lastUpdateDateTime")
-                .asDto()
-                .findPage();
-        DetachedCriteria criteria = DetachedCriteria.forClass(Card.class);
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.property("id").as("id"));
-        projectionList.add(Projections.property("cardNo").as("cardNo"));
-        projectionList.add(Projections.property("cardSn").as("cardSn"));
-        projectionList.add(Projections.property("state").as("state"));
-        projectionList.add(Projections.property("createdUserName").as("createdUserName"));
-        ProjectionList projectionList1 = Projections.projectionList();
-        projectionList1.add(Projections.count("id").as("count"));
-        criteria.setProjection(projectionList1);
-        criteria.add(Restrictions.in("id",Arrays.asList("1","2")));
-        criteria.setResultTransformer(Transformers.aliasToBean(PageInfo.class));
-        baseQuery.initSession();
-        Criteria executableCriteria = criteria.getExecutableCriteria(baseQuery.getSession());
-//        executableCriteria.setFirstResult(1);
-//        executableCriteria.setMaxResults(3);
-        var d = executableCriteria.uniqueResult();
+//        var t = LQuery.find(Card.class)
+//                .join("employee", org.hibernate.sql.JoinType.LEFT_OUTER_JOIN)
+//                .followUp("organization", JoinType.LEFT_OUTER_JOIN)
+//                .fetch()
+//                .select("id,cardNo,cardSn," +
+//                        "state,createdUserName,lastUpdateUserName," +
+//                        "createdDateTime,lastUpdateDateTime,employeeId," +
+//                        "employee.name,employee.userNo,employee.state," +
+//                        "organization.id,organization.name")
+//                .where(pageData)
+//                .in("id",Arrays.asList("1","2"))
+//                .order("desc,lastUpdateDateTime")
+//                .asDto()
+//                .findPage();
+//        DetachedCriteria criteria = DetachedCriteria.forClass(Card.class);
+//        ProjectionList projectionList = Projections.projectionList();
+//        projectionList.add(Projections.property("id").as("id"));
+//        projectionList.add(Projections.property("cardNo").as("cardNo"));
+//        projectionList.add(Projections.property("cardSn").as("cardSn"));
+//        projectionList.add(Projections.property("state").as("state"));
+//        projectionList.add(Projections.property("createdUserName").as("createdUserName"));
+//        ProjectionList projectionList1 = Projections.projectionList();
+//        projectionList1.add(Projections.count("id").as("count"));
+//        criteria.setProjection(projectionList1);
+//        criteria.add(Restrictions.in("id",Arrays.asList("1","2")));
+//        criteria.setResultTransformer(Transformers.aliasToBean(PageInfo.class));
+//        baseQuery.initSession();
+//        Criteria executableCriteria = criteria.getExecutableCriteria(baseQuery.getSession());
+////        executableCriteria.setFirstResult(1);
+////        executableCriteria.setMaxResults(3);
+//        var d = executableCriteria.uniqueResult();
 
 //        Integer integer = LQuery.update(Card.class)
 //                .asUpdate()
@@ -205,8 +205,26 @@ public class EmployeeService {
 //                .in("id",Arrays.asList("1","2"))
 //                .updateExecution();
 
+        var sq=LQuery.find(Employee.class)
+                .fetchLeft("organization","id")
+                .fetchLeft("department","id")
+                .fetchLeft("card","id",new PageData("card.state_eq",0))
+                .eq("isDeleted",0)
+                .asDto();
+        if(pageData.get("userNo")!=null&&!pageData.get("userNo").equals("")){
+            sq.like("userNo","%"+pageData.get("userNo").toString()+"%");
+        }
+        if(pageData.get("name")!=null&&!pageData.get("name").equals("")){
+            sq.like("name","%"+pageData.get("name").toString()+"%");
+        }
+        if(pageData.get("organizationId")!=null&&!pageData.get("organizationId").equals("")){
+            sq.or(new PageData("organization.path_like","%"+pageData.get("organizationId").toString()+"%")
+                    .add("department.path_like","%"+pageData.get("organizationId").toString()+"%"));
+        }
 
-        return d;
+        return sq.order("desc,lastUpdateDateTime").where(pageData).findPage();
+
+
     }
 
     private class myThread extends Thread {

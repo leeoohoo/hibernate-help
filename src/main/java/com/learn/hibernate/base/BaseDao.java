@@ -407,44 +407,38 @@ public  class BaseDao<T, DTO, D>  {
                     case "like":
                         if (v != null && !"".equals(v.toString().trim())) {
                             criterion = Restrictions.like(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
 
                         break;
                     case "eq":
                         if (v != null) {
                             criterion = Restrictions.eq(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
                         break;
                     case "gt":
                         if (v != null) {
                             criterion = Restrictions.gt(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
                         break;
                     case "ge":
                         if (v != null) {
                             criterion = Restrictions.ge(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
                         break;
                     case "le":
                         if (v != null) {
                             criterion = Restrictions.le(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
                         break;
                     case "lt":
                         if (v != null) {
                             criterion = Restrictions.lt(stes[0], v);
-                            BaseDao.this.criteria.add(criterion);
-                            BaseDao.this.criterionList.add(criterion);
+
                         }
                         break;
                     case "in":
@@ -452,8 +446,7 @@ public  class BaseDao<T, DTO, D>  {
                             List list = (List) v;
                             if (list.size() > 0) {
                                 criterion = Restrictions.in(stes[0], list);
-                                BaseDao.this.criteria.add(criterion);
-                                BaseDao.this.criterionList.add(criterion);
+
                             }
                         }
 
@@ -464,14 +457,17 @@ public  class BaseDao<T, DTO, D>  {
                             if (list.size() > 0) {
                                 Criterion in = Restrictions.in(stes[0], list);
                                 criterion = Restrictions.not(in);
-                                BaseDao.this.criteria.add(criterion);
-                                BaseDao.this.criterionList.add(criterion);
+
                             }
                         }
                         break;
 
                 }
             }
+            if(null != this.criteria) {
+                BaseDao.this.criteria.add(criterion);
+            }
+            BaseDao.this.criterionList.add(criterion);
 
         }
         return criterion;

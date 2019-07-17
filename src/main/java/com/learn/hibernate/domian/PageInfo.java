@@ -101,9 +101,11 @@ public class PageInfo {
     }
 
     public void init(PageData pageData) {
-        this.pageIndex = pageData.getPageIndex();
         this.pageSize = pageData.getRows();
-        this.currentPage = pageData.getPageIndex();
+        if(pageData.getPageIndex() == 0) {
+            this.pageIndex = pageData.getPageIndex()+1;
+            this.currentPage = pageData.getPageIndex()+1;
+        }
         var pageTotal = 0L;
         if (this.getCount() % this.getPageSize() > 0) {
             pageTotal = this.getCount() / this.getPageSize() + 1L;
