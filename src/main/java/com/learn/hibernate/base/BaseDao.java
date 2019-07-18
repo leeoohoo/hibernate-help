@@ -462,10 +462,12 @@ public  class BaseDao<T, DTO, D>  {
                         break;
 
                 }
-                if(null != this.criteria) {
+            if(null != this.criteria && null != criterion) {
                     BaseDao.this.criteria.add(criterion);
                 }
-                BaseDao.this.criterionList.add(criterion);
+                if(null != criterion) {
+                    BaseDao.this.criterionList.add(criterion);
+                }
             }
 
 
