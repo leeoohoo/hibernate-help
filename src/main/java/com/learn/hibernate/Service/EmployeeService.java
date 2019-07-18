@@ -90,16 +90,16 @@ public class EmployeeService {
 //                .asDto()
 ////                .findPage();
 //
-//        var t = lQuery.find(CardRecord.class)
-//                .join("card",JoinType.LEFT)
-//                .followUp("employee", JoinType.LEFT)
-//                .followUp("organization",JoinType.LEFT)
+//        var t = LQuery.find(CardRecord.class)
+//                .join("card",JoinType.LEFT_OUTER_JOIN)
+//                .followUp("employee", JoinType.LEFT_OUTER_JOIN)
+//                .followUp("organization",JoinType.LEFT_OUTER_JOIN)
 //                .fetch()
 //                .select("id,type,card.cardNo,card.cardSn," +
-//                        "card.employee.state,createdUserName," +
+//                        "employee.state,createdUserName," +
 //                        "createdDateTime," +
-//                        "card.employee.name,card.employee.userNo," +
-//                        "card.employee.organization.name")
+//                        "employee.name,employee.userNo," +
+//                        "organization.name")
 //                .where(pageData)
 //                .asDto()
 //                .findPage();
@@ -205,25 +205,13 @@ public class EmployeeService {
 //                .in("id",Arrays.asList("1","2"))
 //                .updateExecution();
 
-        var sq=LQuery.find(Employee.class)
-                .fetchLeft("organization","id")
-                .fetchLeft("department","id")
-                .fetchLeft("card","employeeId",new PageData("card.state_eq",0))
-                .eq("isDeleted",0)
-                .asDto();
-        if(pageData.get("userNo")!=null&&!pageData.get("userNo").equals("")){
-            sq.like("userNo","%"+pageData.get("userNo").toString()+"%");
-        }
-        if(pageData.get("name")!=null&&!pageData.get("name").equals("")){
-            sq.like("name","%"+pageData.get("name").toString()+"%");
-        }
-        if(pageData.get("organizationId")!=null&&!pageData.get("organizationId").equals("")){
-            sq.or(new PageData("organization.path_like","%"+pageData.get("organizationId").toString()+"%")
-                    .add("department.path_like","%"+pageData.get("organizationId").toString()+"%"));
-        }
-
-        return sq.order("desc,lastUpdateDateTime").where(pageData).findPage();
-
+        var d =  LQuery.find(Attendance.class)
+                .fetchLeft("device", "deviceId")
+                .where(pageData)
+                .eq("isDeleted", 0)
+                .asDto()
+                .findPage();
+        return d;
 
     }
 

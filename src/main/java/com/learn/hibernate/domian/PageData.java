@@ -66,7 +66,7 @@ public class PageData extends HashMap implements Map {
 			} else{
 				value = valueObj.toString();
 			}
-			returnMap.put(name, value);
+			returnMap.put(name, value.trim());
 		}
 		map = returnMap;
 		if (this.containsKey("pageSize")&&!"".equals((String)map.get("pageSize"))) {
