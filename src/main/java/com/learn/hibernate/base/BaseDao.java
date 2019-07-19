@@ -296,8 +296,8 @@ public  class BaseDao<T, DTO, D>  {
         pageInfo.init(this.pageData);
         this.criteria = DetachedCriteria.forClass(this.tClass);
         Criteria result = this.getResult();
-        result.setFirstResult(this.pageData.getPageIndex());
-        result.setMaxResults(this.pageData.getMaxRows());
+        result.setFirstResult(this.pageData.getFirstRows());
+        result.setMaxResults(this.pageData.getRows());
         pageInfo.setList(result.list());
         return pageInfo;
     }

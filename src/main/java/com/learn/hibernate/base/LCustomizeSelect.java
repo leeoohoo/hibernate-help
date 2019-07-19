@@ -100,7 +100,7 @@ public class LCustomizeSelect {
         var countQuery = this.session.createNativeQuery(countSql.toString());
         PageInfo pageInfo = new PageInfo(pageData,countQuery,this.isGroup);
         this.nativeQuery.setFirstResult(this.pageData.getPageIndex());
-        this.nativeQuery.setMaxResults(this.pageData.getMaxRows());
+        this.nativeQuery.setMaxResults(this.pageData.getFirstRows());
         var result = findList();
         pageInfo.setList(result);
         return pageInfo;

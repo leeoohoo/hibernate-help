@@ -388,7 +388,7 @@ package com.learn.hibernate.oldbase;//package com.learn.hibernate.base;
 //    public PageInfo getPageInfo(PageData pageData, boolean isT) {
 //        var query = getListQuery(pageData, isT);
 //        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
-//        query.setFirstResult(pageData.getMaxRows());
+//        query.setFirstResult(pageData.getFirstRows());
 //        query.setMaxResults(pageInfo.getPageSize());
 //        var result = getDtoList(query.getResultList());
 //        pageInfo.setList(result);
@@ -405,7 +405,7 @@ package com.learn.hibernate.oldbase;//package com.learn.hibernate.base;
 //    public PageInfo getPageInfo(PageData pageData, boolean isT, String... fileds) {
 //        var query = getListQuery(pageData, isT, fileds);
 //        PageInfo pageInfo = new PageInfo(pageData, new MyBQR(cb, cq, root), m -> getQuery(), this.isGroup);
-//        query.setFirstResult(pageData.getMaxRows());
+//        query.setFirstResult(pageData.getFirstRows());
 //        query.setMaxResults(pageInfo.getPageSize());
 //        var result = getDtoList(query.getResultList());
 //        pageInfo.setList(result);

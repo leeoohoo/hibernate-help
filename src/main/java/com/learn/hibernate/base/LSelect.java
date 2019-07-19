@@ -134,7 +134,7 @@ public class LSelect {
     public LSelect where(PageData pageData) {
         this.baseDao.getPageData().setRows(pageData.getRows());
         this.baseDao.getPageData().setPageIndex(pageData.getPageIndex());
-        this.baseDao.getPageData().setMaxRows(pageData.getMaxRows());
+        this.baseDao.getPageData().setFirstRows(pageData.getFirstRows());
         this.baseDao.getPageData().putAll(pageData);
         return this;
     }

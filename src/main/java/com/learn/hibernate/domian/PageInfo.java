@@ -105,6 +105,9 @@ public class PageInfo {
         if(pageData.getPageIndex() == 0) {
             this.pageIndex = pageData.getPageIndex()+1;
             this.currentPage = pageData.getPageIndex()+1;
+        }else {
+            this.pageIndex = pageData.getPageIndex();
+            this.currentPage = pageData.getPageIndex();
         }
         var pageTotal = 0L;
         if (this.getCount() % this.getPageSize() > 0) {

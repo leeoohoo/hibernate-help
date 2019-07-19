@@ -22,8 +22,8 @@ public class PageData extends HashMap implements Map {
 	private static final long serialVersionUID = 1L;
 
 	private Integer rows =10;
-	private Integer pageIndex = 0;
-	private Integer maxRows=(this.pageIndex-1) * this.rows;
+	private Integer pageIndex = 1;
+	private Integer firstRows =(this.pageIndex-1) * this.rows;
 
 
 	Map map = null;
@@ -74,9 +74,9 @@ public class PageData extends HashMap implements Map {
 		}
 		if (this.containsKey("pageIndex")&&!"".equals((String)map.get("pageIndex"))) {
 //			this.setPageIndex(this.rows);
-			var pageIndex = this.GetParameterInt("pageIndex")-1;
-			this.setPageIndex(pageIndex*this.rows);		//当前页
-			this.setMaxRows(this.rows);		//起始行（但不包括第一行）
+			var pageIndex = this.GetParameterInt("pageIndex");
+			this.setPageIndex(pageIndex);		//当前页
+			this.setFirstRows((this.pageIndex-1) * this.rows);		//起始行（但不包括第一行）
 		}
 
 	}
@@ -223,11 +223,11 @@ public class PageData extends HashMap implements Map {
 		this.pageIndex = pageIndex;
 	}
 
-	public Integer getMaxRows() {
-		return maxRows;
+	public Integer getFirstRows() {
+		return firstRows;
 	}
 
-	public void setMaxRows(Integer maxRows) {
-		this.maxRows = maxRows;
+	public void setFirstRows(Integer firstRows) {
+		this.firstRows = firstRows;
 	}
 }
