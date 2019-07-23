@@ -1,6 +1,7 @@
 package com.learn.hibernate.entity;
 
 import com.learn.hibernate.annotation.Ignore;
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -13,6 +14,7 @@ import java.util.List;
 @Entity
 @DynamicInsert
 @DynamicUpdate
+@Builder
 @Table(name = "role")
 @GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class Role  {
@@ -38,6 +40,7 @@ public class Role  {
 
     @OneToOne
     @JoinColumn(name = "id",referencedColumnName = "roleId",insertable = false,updatable = false)
+    @Ignore
     private UserRole userRole;
 
 

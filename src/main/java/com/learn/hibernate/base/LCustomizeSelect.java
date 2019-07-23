@@ -45,6 +45,7 @@ public class LCustomizeSelect {
         this.baseDao = baseDao;
         this.sql = sql;
         this.setAlias();
+        var baseQuery = this.baseDao.getBaseQuery();
         this.session = this.baseDao.getBaseQuery().getSession();
         this.nativeQuery = this.session.createNativeQuery(this.sql);
         this.dtoClass = baseDao.getDtoClass();

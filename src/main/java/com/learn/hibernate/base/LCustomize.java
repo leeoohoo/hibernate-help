@@ -14,7 +14,6 @@ public class LCustomize {
 
 
     public LCustomizeSelect find(String sqlString) {
-        this.baseDao = (BaseDao) SpringUtil.getBean("baseDao");
         return new LCustomizeSelect(this.baseDao,sqlString);
     }
 

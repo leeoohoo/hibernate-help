@@ -205,13 +205,22 @@ public class EmployeeService {
 //                .in("id",Arrays.asList("1","2"))
 //                .updateExecution();
 
-        var d =  LQuery.find(Attendance.class)
-                .fetchLeft("device", "deviceId")
-                .where(pageData)
-                .eq("isDeleted", 0)
-                .asDto()
-                .findPage();
-        return d;
+        Role role = Role.builder().name("jjjj").details("ddfef").build();
+        LQuery.save(role);
+
+//        var d =  LQuery.find(Attendance.class)
+//                .fetchLeft("device", "deviceId")
+//                .where(pageData)
+//                .eq("isDeleted", 0)
+//                .asDto()
+//                .findPage();
+
+        var cardsn = LQuery.customize(CardSn.class)
+                .find("SELECT card_sn FROM card_sn order by rand() limit 1")
+                .asMap()
+                .asMapping("cardSn")
+                .findOne();
+        return cardsn;
 
     }
 
