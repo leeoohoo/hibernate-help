@@ -23,6 +23,8 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static org.springframework.orm.hibernate5.SessionFactoryUtils.closeSession;
+
 /**
  * @param <T>
  * @param <DTO>
@@ -180,6 +182,7 @@ public  class BaseDao<T, DTO, D>  {
         var result = (D) session.save(t);
         session.flush();
         session.clear();
+//        closeSession(session);
         return result;
     }
 
@@ -188,10 +191,23 @@ public  class BaseDao<T, DTO, D>  {
             return true;
         }
         var session = this.baseQuery.getSession();
-        T t = null;
-        for (int i = 0; i < list.size(); i++) {
-            t = list.get(i);
-            session.saveOrUpdate(t);
+
+        try {
+            int count = 0;
+            //Transaction tx= session.beginTransaction();
+            for (int i = 0; i < list.size(); i++) {
+                T t = list.get(i);
+                session.save(list.get(i));
+                if(i%1000 == 0){   //每一千条刷新并写入数据库
+                    session.flush();
+                    session.clear();
+                }
+            }
+            // session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+//            closeSession(session);
         }
         return true;
 
@@ -225,7 +241,6 @@ public  class BaseDao<T, DTO, D>  {
         return result;
     }
 
-    @Transactional
     public boolean deleteBach(String... ids) {
         var list = Arrays.asList(ids);
         for (String id : list) {
@@ -238,7 +253,6 @@ public  class BaseDao<T, DTO, D>  {
     }
 
 
-    @Transactional
     public boolean deleteByIsDeletedBach(String... ids) {
         var list = Arrays.asList(ids);
         for (String id : list) {
