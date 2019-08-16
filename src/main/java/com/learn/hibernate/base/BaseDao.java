@@ -197,7 +197,7 @@ public  class BaseDao<T, DTO, D>  {
             //Transaction tx= session.beginTransaction();
             for (int i = 0; i < list.size(); i++) {
                 T t = list.get(i);
-                session.save(list.get(i));
+                session.saveOrUpdate(list.get(i));
                 if(i%1000 == 0){   //每一千条刷新并写入数据库
                     session.flush();
                     session.clear();
