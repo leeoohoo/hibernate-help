@@ -205,22 +205,34 @@ public class EmployeeService {
 //                .in("id",Arrays.asList("1","2"))
 //                .updateExecution();
 
-        Role role = Role.builder().name("jjjj").details("ddfef").build();
-        LQuery.save(role);
+//        Role role = Role.builder().name("jjjj").details("ddfef").build();
+//        LQuery.save(role);
+//
+////        var d =  LQuery.find(Attendance.class)
+////                .fetchLeft("device", "deviceId")
+////                .where(pageData)
+////                .eq("isDeleted", 0)
+////                .asDto()
+////                .findPage();
+//
+//        var cardsn = LQuery.customize(CardSn.class)
+//                .find("SELECT card_sn FROM card_sn order by rand() limit 1")
+//                .asMap()
+//                .asMapping("cardSn")
+//                .findOne();
+        Action action = Action
+                .builder()
+                .id("402881076c988036016c9880542f0002")
+                .name("ddddddddd")
+                .code("dddd")
+                .menuId("ddd")
+                .description("ddd")
+                .build();
+        List<Action> actions = new ArrayList<>();
+        actions.add(action);
+        Object save = LQuery.save(action);
 
-//        var d =  LQuery.find(Attendance.class)
-//                .fetchLeft("device", "deviceId")
-//                .where(pageData)
-//                .eq("isDeleted", 0)
-//                .asDto()
-//                .findPage();
-
-        var cardsn = LQuery.customize(CardSn.class)
-                .find("SELECT card_sn FROM card_sn order by rand() limit 1")
-                .asMap()
-                .asMapping("cardSn")
-                .findOne();
-        return cardsn;
+        return save;
 
     }
 

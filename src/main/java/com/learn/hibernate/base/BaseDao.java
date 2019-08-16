@@ -4,6 +4,7 @@ import com.learn.hibernate.annotation.Ignore;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
 import com.learn.hibernate.enums.OrderType;
+import com.learn.hibernate.utils.ClassUtils;
 import com.learn.hibernate.utils.MyStringUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.*;
 import java.util.*;
 
-import static org.springframework.orm.hibernate5.SessionFactoryUtils.closeSession;
 
 /**
  * @param <T>
@@ -179,11 +178,17 @@ public  class BaseDao<T, DTO, D>  {
 
     public D add(T t) {
         Session session = this.baseQuery.getSession();
-        var result = (D) session.save(t);
+        session.saveOrUpdate(t);
         session.flush();
         session.clear();
-//        closeSession(session);
-        return result;
+        D d = null;
+        try {
+            d = (D) ClassUtils.getProperty(t,"id");
+        } catch (Exception e) {
+            log.error("----------------------------------------t插入失败：", t);
+            return d;
+        }
+        return d;
     }
 
     public boolean addBach(List<T> list) {

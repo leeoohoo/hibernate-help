@@ -2,7 +2,10 @@ package com.learn.hibernate.entity;
 
 import com.learn.hibernate.annotation.Ignore;
 import com.learn.hibernate.annotation.Nojoin;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
@@ -11,6 +14,9 @@ import javax.persistence.*;
 
 @Entity
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @DynamicInsert
 @DynamicUpdate
 @Table(name = "action")
