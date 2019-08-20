@@ -181,7 +181,7 @@ public class BaseDao<T, DTO, D> {
         D d = null;
         try {
             d = (D) ClassUtils.getProperty(t, "id");
-            if ("".equals(d.toString().trim())) {
+            if (null != d && "".equals(d.toString().trim())) {
                 ClassUtils.setProperty(t, "id", null);
             }
             session.saveOrUpdate(t);
