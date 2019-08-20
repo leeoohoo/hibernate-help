@@ -37,7 +37,7 @@ import java.util.*;
 @Data
 @SuppressWarnings({"unused", "unchecked", "rawtypes", "null", "hiding"})
 @Slf4j
-public  class BaseDao<T, DTO, D>  {
+public class BaseDao<T, DTO, D> {
 
     @Value("${mybasedao.entity}")
     private String entityString;
@@ -58,9 +58,9 @@ public  class BaseDao<T, DTO, D>  {
 
     private Class<DTO> dtoClass;
 
-    private List<PageData> orPageData ;//or括号中的条件
+    private List<PageData> orPageData;//or括号中的条件
 
-    private PageData pageData ;//查询条件
+    private PageData pageData;//查询条件
 
     private Class resultClass;//最终获得的对象类型
 
@@ -68,13 +68,13 @@ public  class BaseDao<T, DTO, D>  {
 
     private StringBuilder groupFileds;
 
-    private Map<String, OrderType> orderTypeMap ;
+    private Map<String, OrderType> orderTypeMap;
 
-    private List<Criterion> criterionList ;
+    private List<Criterion> criterionList;
 
     private Map<String, JoinType> joinTypeMap;
 
-    private Map<String, SimpleExpression> stringSimpleExpressionMap ;
+    private Map<String, SimpleExpression> stringSimpleExpressionMap;
 
     private String selectFileds;
 
@@ -104,7 +104,7 @@ public  class BaseDao<T, DTO, D>  {
         this.initSqlRely();
     }
 
-    public  void init(Class<T> clazz) {
+    public void init(Class<T> clazz) {
         BaseDao.this.tClass = clazz;
         var tableName = MyStringUtils.subStringLastChar(clazz.getName(), '.');
         BaseDao.this.entityName = tableName;
@@ -114,7 +114,7 @@ public  class BaseDao<T, DTO, D>  {
         this.initSqlRely();
     }
 
-    private void initSqlRely () {
+    private void initSqlRely() {
         this.joinTypeMap = new HashMap<>();
         this.orderTypeMap = new HashMap<>();
         this.stringSimpleExpressionMap = new HashMap<>();
@@ -178,14 +178,18 @@ public  class BaseDao<T, DTO, D>  {
 
     public D add(T t) {
         Session session = this.baseQuery.getSession();
-        session.saveOrUpdate(t);
-        session.flush();
-        session.clear();
         D d = null;
         try {
-            d = (D) ClassUtils.getProperty(t,"id");
+            d = (D) ClassUtils.getProperty(t, "id");
+            if ("".equals(d.toString().trim())) {
+                ClassUtils.setProperty(t, "id", null);
+            }
+            session.saveOrUpdate(t);
+            session.flush();
+            session.clear();
+            d = (D) ClassUtils.getProperty(t, "id");
         } catch (Exception e) {
-            log.error("----------------------------------------t插入失败：", t);
+            log.error("----------------------------------------" + t.getClass().getName() + "插入失败：", t);
             return d;
         }
         return d;
@@ -203,7 +207,7 @@ public  class BaseDao<T, DTO, D>  {
             for (int i = 0; i < list.size(); i++) {
                 T t = list.get(i);
                 session.saveOrUpdate(list.get(i));
-                if(i%1000 == 0){   //每一千条刷新并写入数据库
+                if (i % 1000 == 0) {   //每一千条刷新并写入数据库
                     session.flush();
                     session.clear();
                 }
@@ -211,7 +215,7 @@ public  class BaseDao<T, DTO, D>  {
             // session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
 //            closeSession(session);
         }
         return true;
@@ -327,7 +331,7 @@ public  class BaseDao<T, DTO, D>  {
      */
     private void initCriteria() {
         this.criteria = DetachedCriteria.forClass(this.tClass);
-        if(!this.isPage) {
+        if (!this.isPage) {
             this.initSelect();//初始化查询字断
         }
         this.initJoin();
@@ -390,16 +394,16 @@ public  class BaseDao<T, DTO, D>  {
      * 初始化join关联
      */
     private void initJoin() {
-        for(Map.Entry<String,JoinType> entry : BaseDao.this.joinTypeMap.entrySet()) {
+        for (Map.Entry<String, JoinType> entry : BaseDao.this.joinTypeMap.entrySet()) {
             var k = entry.getKey();
             var v = entry.getValue();
             SimpleExpression simpleExpression = BaseDao.this.stringSimpleExpressionMap.get(k);
             int i = k.lastIndexOf(".");
             String substring = "";
-            if(i < 0) {
+            if (i < 0) {
                 substring = k;
-            }else {
-                substring = k.substring(i+1);
+            } else {
+                substring = k.substring(i + 1);
             }
             if (null != simpleExpression) {
                 BaseDao.this.criteria.createAlias(k, substring, v, simpleExpression);
@@ -481,10 +485,10 @@ public  class BaseDao<T, DTO, D>  {
                         break;
 
                 }
-            if(null != this.criteria && null != criterion) {
+                if (null != this.criteria && null != criterion) {
                     BaseDao.this.criteria.add(criterion);
                 }
-                if(null != criterion) {
+                if (null != criterion) {
                     BaseDao.this.criterionList.add(criterion);
                 }
             }
@@ -608,7 +612,6 @@ public  class BaseDao<T, DTO, D>  {
         }
         return sb.toString();
     }
-
 
 
 }
