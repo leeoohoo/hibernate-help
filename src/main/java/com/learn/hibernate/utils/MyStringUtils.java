@@ -47,7 +47,7 @@ public class  MyStringUtils {
      * @param str
      * @return
      */
-    public static synchronized String upperCase(String str) {
+    public static synchronized String upperFirtCharCase(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 

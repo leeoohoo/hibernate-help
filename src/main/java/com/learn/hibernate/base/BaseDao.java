@@ -124,20 +124,45 @@ public class BaseDao<T, DTO, D> {
         this.pageData = new PageData();
     }
 
+//    public void initTClz(String clazz) throws ClassNotFoundException {
+//        var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
+//        int count = 0;
+//        for (String str : packagelist) {
+//            try {
+//                BaseDao.this.tClass = (Class<T>) Class.forName(str + "." + clazz);
+//            } catch (ClassNotFoundException e) {
+//                count++;
+//                if (packagelist.size() <= count) {
+//                    throw e;
+//                }
+//            }
+//        }
+//    }
+
     public void initTClz(String clazz) throws ClassNotFoundException {
-        var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
-        int count = 0;
-        for (String str : packagelist) {
-            try {
-                BaseDao.this.tClass = (Class<T>) Class.forName(str + "." + clazz);
-            } catch (ClassNotFoundException e) {
-                count++;
-                if (packagelist.size() <= count) {
-                    throw e;
-                }
-            }
+        try {
+            BaseDao.this.tClass = getMyClass(clazz);
+        } catch (ClassNotFoundException e) {
+            throw e;
         }
     }
+
+//    public Class getMyClass(String clazz) throws ClassNotFoundException {
+//        var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
+//        int count = 0;
+//        Class clz = null;
+//        for (String str : packagelist) {
+//            try {
+//                clz = Class.forName(str + "." + clazz.toLowerCase() + "." + MyStringUtils.upperFirtCharCase(clazz));
+//            } catch (ClassNotFoundException e) {
+//                count++;
+//                if (packagelist.size() <= count) {
+//                    throw e;
+//                }
+//            }
+//        }
+//        return clz;
+//    }
 
     public Class getMyClass(String clazz) throws ClassNotFoundException {
         var packagelist = Arrays.asList(BaseDao.this.entityString.split(","));
@@ -155,6 +180,19 @@ public class BaseDao<T, DTO, D> {
         }
         return clz;
     }
+
+//
+//    public void initDtoClz(String className,String dtoName) {
+//        int count = 0;
+//        var packagelist = Arrays.asList(BaseDao.this.dtoString.split(","));
+//        for (String str : packagelist) {
+//            try {
+//                this.dtoClass = (Class<DTO>) Class.forName(str + "." +className+"." +this.dtoSuffix.toLowerCase()+"."+ dtoName);
+//            } catch (ClassNotFoundException e) {
+//                log.error("-----------------------------------------------" + dtoName + "未找到相应的dto类");
+//            }
+//        }
+//    }
 
     public void initDtoClz(String dtoName) {
         int count = 0;
@@ -335,7 +373,7 @@ public class BaseDao<T, DTO, D> {
             this.initSelect();//初始化查询字断
         }
         this.initJoin();
-        this.initWhere(this.pageData);//初始化一般查询条件
+        this.initWhere(this.pageData,false);//初始化一般查询条件
         this.orWhere();//初始化or条件
         this.initOrder();
         this.initResult();
@@ -418,7 +456,7 @@ public class BaseDao<T, DTO, D> {
      *
      * @param pageData
      */
-    public Criterion initWhere(PageData pageData) {
+    public Criterion initWhere(PageData pageData,boolean isOr) {
         this.criterionList = new ArrayList<>();
         Criterion criterion = null;
         for (Map.Entry<String, Object> m : pageData.getMap().entrySet()) {
@@ -485,9 +523,12 @@ public class BaseDao<T, DTO, D> {
                         break;
 
                 }
-                if (null != this.criteria && null != criterion) {
-                    BaseDao.this.criteria.add(criterion);
+                if(!isOr) {
+                    if (null != this.criteria && null != criterion) {
+                        BaseDao.this.criteria.add(criterion);
+                    }
                 }
+
                 if (null != criterion) {
                     BaseDao.this.criterionList.add(criterion);
                 }
@@ -502,9 +543,10 @@ public class BaseDao<T, DTO, D> {
     private void orWhere() {
         this.orPageData.forEach(
                 p -> {
-                    initWhere(p);
+                    initWhere(p,true);
                     var or = Restrictions.or(this.criterionList.toArray(Criterion[]::new));
                     BaseDao.this.criteria.add(or);
+                    this.criterionList = new ArrayList<>();
                 }
         );
     }

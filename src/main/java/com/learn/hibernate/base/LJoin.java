@@ -26,7 +26,7 @@ public class LJoin {
     }
 
     public LJoin on(PageData pageData) {
-        this.lSelect.getBaseDao().getStringSimpleExpressionMap().put(this.tableName, this.lSelect.getBaseDao().initWhere(pageData));
+        this.lSelect.getBaseDao().getStringSimpleExpressionMap().put(this.tableName, this.lSelect.getBaseDao().initWhere(pageData,false));
         return this;
     }
 

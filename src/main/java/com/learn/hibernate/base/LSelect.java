@@ -60,7 +60,7 @@ public class LSelect {
     public LSelect fetchInner(String tableName, String joinId, PageData pageData) {
         this.baseDao.getJoinTableName().add(tableName);
         this.baseDao.getJoinTypeMap().put(tableName, JoinType.INNER_JOIN);
-        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData,false));
         return this;
     }
 
@@ -96,7 +96,7 @@ public class LSelect {
     public LSelect fetchLeft(String tableName, String joinId, PageData pageData) {
         this.baseDao.getJoinTableName().add(tableName);
         this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
-        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData,false));
         return this;
     }
 
@@ -110,7 +110,7 @@ public class LSelect {
     public LSelect fetchRight(String tableName, String joinId, PageData pageData) {
         this.baseDao.getJoinTableName().add(tableName);
         this.baseDao.getJoinTypeMap().put(tableName, JoinType.LEFT_OUTER_JOIN);
-        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData));
+        this.baseDao.getStringSimpleExpressionMap().put(tableName, this.baseDao.initWhere(pageData,false));
         return this;
     }
 

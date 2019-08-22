@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 /**
- * TODO
+ * 初始化spring 上下文
  * email leeoohoo@gmail.com
  * rocketmq
  * Created by lee on 2019-06-28.
