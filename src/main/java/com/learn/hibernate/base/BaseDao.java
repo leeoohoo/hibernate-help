@@ -337,7 +337,7 @@ public class BaseDao<T, DTO, D> {
         this.initCriteria();
         this.isPage = false;
         this.initPageSelect();
-        this.criteria.setResultTransformer(Transformers.aliasToBean(PageInfo.class));
+        this.criteria.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
         Session session = this.baseQuery.getSession();
         return this.criteria.getExecutableCriteria(session);
     }
@@ -353,7 +353,10 @@ public class BaseDao<T, DTO, D> {
 
     public PageInfo getPage() {
         Criteria pageResult = BaseDao.this.getPageResult();
-        PageInfo pageInfo = (PageInfo) pageResult.uniqueResult();
+        Map<String,Object> map = (Map<String, Object>) pageResult.list().get(0);
+        Long count = (Long) map.get("count");
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setCount(count);
         pageInfo.init(this.pageData);
         this.criteria = DetachedCriteria.forClass(this.tClass);
         Criteria result = this.getResult();
@@ -385,6 +388,17 @@ public class BaseDao<T, DTO, D> {
      */
     private void initPageSelect() {
         BaseDao.this.projectionList = Projections.projectionList();
+        String s = BaseDao.this.groupFileds.toString();
+
+        if (null != s && !"".equals(s.trim())) {
+            String[] split = s.split(",");
+            for(String filed : split) {
+                if("".equals(filed.trim())){
+                    continue;
+                }
+                BaseDao.this.projectionList.add(Projections.groupProperty(filed).as(getAlias(filed)));
+            }
+        }
         BaseDao.this.projectionList.add(Projections.count("id").as("count"));
         BaseDao.this.criteria.setProjection(projectionList);
     }
