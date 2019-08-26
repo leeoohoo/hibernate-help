@@ -353,8 +353,16 @@ public class BaseDao<T, DTO, D> {
 
     public PageInfo getPage() {
         Criteria pageResult = BaseDao.this.getPageResult();
-        Map<String,Object> map = (Map<String, Object>) pageResult.list().get(0);
-        Long count = (Long) map.get("count");
+
+        String s = BaseDao.this.groupFileds.toString();
+        Long count = null;
+        if (null != s && !"".equals(s.trim())) {
+            count = Long.valueOf(pageResult.list().size());
+        }else {
+            Map<String,Object> map = (Map<String, Object>) pageResult.list().get(0);
+            count = (Long) map.get("count");
+        }
+
         PageInfo pageInfo = new PageInfo();
         pageInfo.setCount(count);
         pageInfo.init(this.pageData);
