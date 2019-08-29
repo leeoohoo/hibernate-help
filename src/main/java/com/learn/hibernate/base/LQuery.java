@@ -10,7 +10,6 @@ import java.util.List;
 public class LQuery<T> {
 
 
-
     public static BaseDao getBaseDao() {
         return (BaseDao) SpringUtil.getBean("baseDao");
     }
@@ -21,14 +20,27 @@ public class LQuery<T> {
         return baseDao;
     }
 
-    public  static <T> Object save(T t) {
+    public static <T> Object save(T t) {
+        var baseDao = getBaseDao();
+        baseDao.getBaseQuery().initSession();
+        baseDao.setTClass(t.getClass());
+        return baseDao.addOrUpdate(t);
+    }
+
+    public static <T> Object save(T t, boolean hasId) {
         var baseDao = getBaseDao();
         baseDao.getBaseQuery().initSession();
         baseDao.setTClass(t.getClass());
         return baseDao.add(t);
     }
 
-    public static <T>  boolean  saveAll(List<T> ts) {
+    public static <T> boolean saveAll(List<T> ts) {
+        var baseDao = getBaseDao();
+        baseDao.getBaseQuery().initSession();
+        return baseDao.addOrUpdateBach(ts);
+    }
+
+    public static <T> boolean saveAll(List<T> ts,boolean hasId) {
         var baseDao = getBaseDao();
         baseDao.getBaseQuery().initSession();
         return baseDao.addBach(ts);
@@ -38,11 +50,11 @@ public class LQuery<T> {
         return new LSelect(initBaseDao(clz));
     }
 
-    public static LCustomize customize(Class clz)  {
+    public static LCustomize customize(Class clz) {
         return new LCustomize(initBaseDao(clz));
     }
 
-    public static LDelete delete(Class clz)  {
+    public static LDelete delete(Class clz) {
         return new LDelete(initBaseDao(clz));
     }
 
@@ -51,10 +63,6 @@ public class LQuery<T> {
         var baseDao = initBaseDao(clz);
         return baseDao.getBaseQuery();
     }
-
-
-
-
 
 
 }

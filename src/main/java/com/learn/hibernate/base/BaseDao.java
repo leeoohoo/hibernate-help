@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.beans.IntrospectionException;
+import java.io.Serializable;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -214,7 +215,7 @@ public class BaseDao<T, DTO, D> {
     }
 
 
-    public D add(T t) {
+    public D addOrUpdate(T t) {
         Session session = this.baseQuery.getSession();
         D d = null;
         try {
@@ -233,7 +234,38 @@ public class BaseDao<T, DTO, D> {
         return d;
     }
 
+    public D add(T t) {
+        Session session = this.baseQuery.getSession();
+        D id = (D) session.save(t);
+        session.flush();
+        session.clear();
+        return id;
+    }
+
     public boolean addBach(List<T> list) {
+        if (null == list && list.size() < 0) {
+            return true;
+        }
+        var session = this.baseQuery.getSession();
+
+        try {
+            int count = 0;
+            for (int i = 0; i < list.size(); i++) {
+                T t = list.get(i);
+                session.save(list.get(i));
+                if (i % 1000 == 0) {   //每一千条刷新并写入数据库
+                    session.flush();
+                    session.clear();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+        }
+        return true;
+    }
+
+    public boolean addOrUpdateBach(List<T> list) {
         if (null == list && list.size() < 0) {
             return true;
         }
@@ -358,8 +390,8 @@ public class BaseDao<T, DTO, D> {
         Long count = null;
         if (null != s && !"".equals(s.trim())) {
             count = Long.valueOf(pageResult.list().size());
-        }else {
-            Map<String,Object> map = (Map<String, Object>) pageResult.list().get(0);
+        } else {
+            Map<String, Object> map = (Map<String, Object>) pageResult.list().get(0);
             count = (Long) map.get("count");
         }
 
@@ -384,7 +416,7 @@ public class BaseDao<T, DTO, D> {
             this.initSelect();//初始化查询字断
         }
         this.initJoin();
-        this.initWhere(this.pageData,false);//初始化一般查询条件
+        this.initWhere(this.pageData, false);//初始化一般查询条件
         this.orWhere();//初始化or条件
         this.initOrder();
         this.initResult();
@@ -400,8 +432,8 @@ public class BaseDao<T, DTO, D> {
 
         if (null != s && !"".equals(s.trim())) {
             String[] split = s.split(",");
-            for(String filed : split) {
-                if("".equals(filed.trim())){
+            for (String filed : split) {
+                if ("".equals(filed.trim())) {
                     continue;
                 }
                 BaseDao.this.projectionList.add(Projections.groupProperty(filed).as(getAlias(filed)));
@@ -478,7 +510,7 @@ public class BaseDao<T, DTO, D> {
      *
      * @param pageData
      */
-    public Criterion initWhere(PageData pageData,boolean isOr) {
+    public Criterion initWhere(PageData pageData, boolean isOr) {
         this.criterionList = new ArrayList<>();
         Criterion criterion = null;
         for (Map.Entry<String, Object> m : pageData.getMap().entrySet()) {
@@ -552,7 +584,7 @@ public class BaseDao<T, DTO, D> {
                         break;
 
                 }
-                if(!isOr) {
+                if (!isOr) {
                     if (null != this.criteria && null != criterion) {
                         BaseDao.this.criteria.add(criterion);
                     }
@@ -572,7 +604,7 @@ public class BaseDao<T, DTO, D> {
     private void orWhere() {
         this.orPageData.forEach(
                 p -> {
-                    initWhere(p,true);
+                    initWhere(p, true);
                     var or = Restrictions.or(this.criterionList.toArray(Criterion[]::new));
                     BaseDao.this.criteria.add(or);
                     this.criterionList = new ArrayList<>();
