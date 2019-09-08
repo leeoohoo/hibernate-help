@@ -500,6 +500,11 @@ public class BaseDao<T, DTO, D> {
             if (null != simpleExpression) {
                 BaseDao.this.criteria.createAlias(k, substring, v, simpleExpression);
             } else {
+                if(isPage){
+                    if(v.getJoinTypeValue() ==1) {
+                        continue;
+                    }
+                }
                 BaseDao.this.criteria.createAlias(k, substring, v);
             }
         }

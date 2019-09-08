@@ -220,19 +220,22 @@ public class EmployeeService {
 //                .asMap()
 //                .asMapping("cardSn")
 //                .findOne();
-        Action action = Action
-                .builder()
-                .id("402881076c988036016c9880542f0002")
-                .name("ddddddddd")
-                .code("dddd")
-                .menuId("ddd")
-                .description("ddd")
-                .build();
-        List<Action> actions = new ArrayList<>();
-        actions.add(action);
-        Object save = LQuery.save(action);
-
-        return save;
+//        Action action = Action
+//                .builder()
+//                .id("402881076c988036016c9880542f0002")
+//                .name("ddddddddd")
+//                .code("dddd")
+//                .menuId("ddd")
+//                .description("ddd")
+//                .build();
+//        List<Action> actions = new ArrayList<>();
+//        actions.add(action);
+//        Object save = LQuery.save(action,true);
+        PageInfo employee = LQuery.find(Card.class)
+                .join("employee", JoinType.LEFT_OUTER_JOIN)
+                .fetch()
+                .findPage();
+        return employee;
 
     }
 
