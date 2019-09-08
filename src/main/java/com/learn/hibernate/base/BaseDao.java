@@ -202,7 +202,7 @@ public class BaseDao<T, DTO, D> {
             try {
                 this.dtoClass = (Class<DTO>) Class.forName(str + "." + dtoName);
             } catch (ClassNotFoundException e) {
-                log.error("-----------------------------------------------" + dtoName + "未找到相应的dto类");
+//                log.error("-----------------------------------------------" + dtoName + "未找到相应的dto类");
             }
         }
     }
