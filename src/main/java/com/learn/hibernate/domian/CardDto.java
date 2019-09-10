@@ -38,10 +38,7 @@ public class CardDto {
 
    private Integer employeeState;
 
-   @Nojoin
-   private String organizationId;
 
-   private String organizationName;
 
    @Nojoin
    @Ignore

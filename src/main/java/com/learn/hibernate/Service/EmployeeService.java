@@ -234,6 +234,8 @@ public class EmployeeService {
         PageInfo employee = LQuery.find(Card.class)
                 .join("employee", JoinType.LEFT_OUTER_JOIN)
                 .fetch()
+                .eq("employee.name","1221")
+                .asDto(CardDto.class)
                 .findPage();
         return employee;
 
