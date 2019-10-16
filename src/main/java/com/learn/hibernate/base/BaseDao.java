@@ -651,13 +651,8 @@ public class BaseDao<T, DTO, D> {
             return fields;
         }
         //没有的话则根据类型来获取
-        Field[] declaredFields = clazz.getDeclaredFields();
-        Field[] superClassFields = clazz.getSuperclass().getDeclaredFields();
         List<Field> list = new ArrayList<>();
-        if (null != superClassFields && superClassFields.length > 0) {
-            Collections.addAll(list, superClassFields);
-        }
-        Collections.addAll(list, declaredFields);
+        list = getFields(clazz,list);
         list.forEach(
                 field -> {
                     Ignore annotation = field.getAnnotation(Ignore.class);
@@ -669,6 +664,15 @@ public class BaseDao<T, DTO, D> {
         );
 
         return fields;
+    }
+
+    private List<Field> getFields(Class clazz,List<Field> list) {
+        Field[] declaredFields = clazz.getDeclaredFields();
+        Collections.addAll(list, declaredFields);
+        if(!clazz.getSuperclass().getName().contains("java.lang.Object")) {
+            getFields(clazz.getSuperclass(),list);
+        }
+        return list;
     }
 
     /**
