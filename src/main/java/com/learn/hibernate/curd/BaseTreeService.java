@@ -35,7 +35,7 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
                     Integer lay = (Integer) ClassUtils.getProperty(parent, "lay");
                     ClassUtils.setProperty(t, "lay", lay + 1);
                     ClassUtils.setProperty(parent,"hasChild",1);
-                    update(parent);
+                    saveOrUpdate(parent);
                 }else {
                     ClassUtils.setProperty(t, "lay", 0);
                 }
