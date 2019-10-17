@@ -33,7 +33,7 @@ public class BaseModel implements Serializable {
     private String lastUpdateUserName;
 
     @Column(length = 1, nullable = false,columnDefinition = "int(1) default 0 comment '是否逻辑删除'")
-    private Integer isDeleted;
+    private Integer isDeleted = 0;
 
 
 }
