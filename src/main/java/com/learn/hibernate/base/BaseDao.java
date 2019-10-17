@@ -521,7 +521,7 @@ public class BaseDao<T, DTO, D> {
                 switch (stes[1]) {
                     case "like":
                         if (v != null && !"".equals(v.toString().trim())) {
-                            criterion = Restrictions.like(stes[0], v);
+                            criterion = Restrictions.like(stes[0], "%"+v+"%");
 
                         }
 
