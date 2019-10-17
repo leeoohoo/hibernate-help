@@ -173,6 +173,39 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
         }
     }
 
+    @Transactional
+    default List<TREE> findTree(PageData pageData) {
+         = selectDTOList(pageData, getTreeClass());
+        if (null == trees || trees.isEmpty()) {
+            return null;
+        }
+        try {
+            Map<Integer, List<TREE>> lay = trees.stream().distinct().collect(Collectors.groupingBy(t -> {
+                try {
+                    return (Integer) ClassUtils.getProperty(t, "lay");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("列表出现异常");
+                }
+            }));
+
+            List<Integer> collect = lay.keySet().stream().sorted(Comparator.comparingInt(Integer::intValue)).collect(Collectors.toList());
+            lay = trees.stream().distinct().collect(Collectors.groupingBy(t -> {
+                try {
+                    return (Integer) ClassUtils.getProperty(t, "parentId");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("列表发生异常");
+                }
+            }));
+            return setChild(lay, lay.get(collect.get(0)));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     private List<TREE> setChild(Map<Integer, List<TREE>> lay, List<TREE> trees) {
         trees.forEach(
                 tree -> {
