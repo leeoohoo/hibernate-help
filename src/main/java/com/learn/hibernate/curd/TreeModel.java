@@ -21,7 +21,7 @@ public class TreeModel extends BaseModel{
     private String name;
 
     @Column(length = 1000,nullable = false,columnDefinition = "varchar(1000) default '' comment '树形地址'")
-    private String path;
+    private String path = "";
 
     @Column(length = 2,nullable = false,columnDefinition = "int(2) default 0 comment '树形层级 第一级为0'")
     private Integer lay;
