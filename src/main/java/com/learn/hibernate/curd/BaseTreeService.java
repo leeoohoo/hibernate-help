@@ -31,8 +31,12 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
                 D parentId = (D) ClassUtils.getProperty(t, "parentId");//获得未更改的parentId
                 Class<T> tClass = getTClass();
                 T parent = selectTById(parentId);
-                Integer lay = (Integer) ClassUtils.getProperty(parent, "lay");
-                ClassUtils.setProperty(t, "lay", lay + 1);
+                if(null != parent) {
+                    Integer lay = (Integer) ClassUtils.getProperty(parent, "lay");
+                    ClassUtils.setProperty(t, "lay", lay + 1);
+                }else {
+                    ClassUtils.setProperty(t, "lay", 0);
+                }
                 ClassUtils.setProperty(t, "hasChild", 0);
             } else {
                 update(t);
@@ -117,14 +121,14 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
         T itself = selectTById(id);//获取还未删除的自身
         try {
             T parent = selectTById((D) ClassUtils.getProperty(itself, "parentId"));
-            if (null == parent) {
-                deleteById(id);
+            if (null != parent) {
+                sub = selectTList(new PageData("parentId", ClassUtils.getProperty(parent, "id")));
+                if (sub.size() <= 1) {
+                    ClassUtils.setProperty(parent, "hasChild", 0);
+                    saveOrUpdate(parent);
+                }
             }
-            sub = selectTList(new PageData("parentId", ClassUtils.getProperty(parent, "id")));
-            if (sub.size() <= 1) {
-                ClassUtils.setProperty(parent, "hasChild", 0);
-                saveOrUpdate(parent);
-            }
+            deleteById(id);
             return 1;
         } catch (Exception e) {
             e.printStackTrace();
