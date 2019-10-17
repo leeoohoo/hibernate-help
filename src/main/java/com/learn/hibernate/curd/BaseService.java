@@ -58,7 +58,7 @@ public interface BaseService<T, D> {
                 String employeeName;
                 try {
                     CurrentUserDto currentUser = getCurrentUser();
-                    if(currentUser == null) {
+                    if (currentUser == null) {
                         currentUser = new CurrentUserDto();
                         currentUser.setId(0);
                         currentUser.setEmployeeName("system");
@@ -73,8 +73,8 @@ public interface BaseService<T, D> {
                 ClassUtils.setProperty(t, "createdUserName", employeeName);
                 ClassUtils.setProperty(t, "createdDateTime", new Date().getTime());
             }
-            if(ClassUtils.hasCloums(t,"isDeleted")) {
-                ClassUtils.setProperty(t,"isDeleted",0);
+            if (ClassUtils.hasCloums(t, "isDeleted")) {
+                ClassUtils.setProperty(t, "isDeleted", 0);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,7 +95,7 @@ public interface BaseService<T, D> {
                 String employeeName = null;
                 try {
                     CurrentUserDto currentUser = getCurrentUser();
-                    if(currentUser == null) {
+                    if (currentUser == null) {
                         currentUser = new CurrentUserDto();
                         currentUser.setId(0);
                         currentUser.setEmployeeName("system");
@@ -216,9 +216,9 @@ public interface BaseService<T, D> {
                         .in("id", ids)
                         .asUpdate()
                         .set("isDeleted", 1)
-                        .set("lastUpdateTime", new Date().getTime())
-                        .set("lastUpdateUserId", currentUser == null ? 0 :currentUser.getId())
-                        .set("lastUpdateUserName", currentUser == null ?"":currentUser.getEmployeeName())
+                        .set("lastUpdateDateTime", new Date().getTime())
+                        .set("lastUpdateUserId", currentUser == null ? 0 : currentUser.getId())
+                        .set("lastUpdateUserName", currentUser == null ? "" : currentUser.getEmployeeName())
                         .updateExecution();
             } else {
                 throw new RuntimeException("该对象不支持逻辑删除");
