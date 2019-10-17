@@ -217,8 +217,8 @@ public interface BaseService<T, D> {
                         .asUpdate()
                         .set("isDeleted", 1)
                         .set("lastUpdateTime", new Date().getTime())
-                        .set("lastUpdateUserId", currentUser.getId())
-                        .set("lastUpdateUserName", currentUser.getEmployeeName())
+                        .set("lastUpdateUserId", currentUser == null ? 0 :currentUser.getId())
+                        .set("lastUpdateUserName", currentUser == null ?"":currentUser.getEmployeeName())
                         .updateExecution();
             } else {
                 throw new RuntimeException("该对象不支持逻辑删除");
