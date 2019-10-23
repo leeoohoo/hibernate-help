@@ -42,6 +42,7 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
                 ClassUtils.setProperty(t, "hasChild", 0);
             } else {
                 update(t);
+                CurrentThreadVariable.clearCurrentThreadVariable();
                 return id;
             }
 
@@ -67,13 +68,14 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
                 currentThreadVariable += 1;
                 ClassUtils.setProperty(t, "lay", currentThreadVariable);
                 updateById(t);//直接保存'
-
                 CurrentThreadVariable.setCurrentThreadVariable(currentThreadVariable);
-                List<T> subsetOfitself = selectTList(new PageData("parentId_eq", id));//查找本身的子集
-                if (subsetOfitself.size() > 0) {//如果有子集需要走自身递归，更改lay
-                    for (T sub : subsetOfitself) {
-                        update(sub);
-                    }
+            }else {
+                updateById(t);
+            }
+            List<T> subsetOfitself = selectTList(new PageData("parentId_eq", id));//查找本身的子集
+            if (subsetOfitself.size() > 0) {//如果有子集需要走自身递归，更改lay
+                for (T sub : subsetOfitself) {
+                    update(sub);
                 }
             }
 
