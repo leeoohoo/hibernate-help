@@ -173,9 +173,7 @@ public interface BaseTreeService<T, D, TREE> extends BaseService<T, D> {
         }
     }
 
-    @Transactional
-    default List<TREE> findTree(PageData pageData) {
-         = selectDTOList(pageData, getTreeClass());
+    default List<TREE> findTree(List<TREE> trees) {
         if (null == trees || trees.isEmpty()) {
             return null;
         }

@@ -129,6 +129,7 @@ public interface BaseService<T, D> {
                 createdInit(t);
             } else {
                 lastUpdateInit(t);
+                updateById(t);
             }
 
         } catch (Exception e) {
