@@ -1,6 +1,8 @@
 package com.learn.hibernate.curd;
 
 import com.learn.hibernate.base.LQuery;
+import com.learn.hibernate.config.CurrentUser;
+import com.learn.hibernate.config.CurrentUserDto;
 import com.learn.hibernate.domian.PageData;
 import com.learn.hibernate.domian.PageInfo;
 import com.learn.hibernate.utils.ClassUtils;
