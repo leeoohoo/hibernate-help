@@ -33,6 +33,9 @@ public class PostProcessingFilter implements WebFilter {
         var headers = request.getHeaders();
         if(headers.containsKey("Authorization")) {
             var token = headers.get("Authorization").get(0);
+            if(null == token && token.length() <= 0) {
+                return;
+            }
             token = token.substring(7);
             var userStr = redisComponent.sentinelGet(token);
             log.info("------------------------------------------->>>>>>>>>>>抓取到上下文，userStr:{}",userStr);
