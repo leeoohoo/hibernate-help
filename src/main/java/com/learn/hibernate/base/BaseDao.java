@@ -117,7 +117,7 @@ public class BaseDao<T, DTO, D> {
 
     private void initSqlRely() {
         this.joinTypeMap = new HashMap<>();
-        this.orderTypeMap = new HashMap<>();
+        this.orderTypeMap = new LinkedHashMap<>();
         this.stringSimpleExpressionMap = new HashMap<>();
         this.groupFileds = new StringBuilder();
         this.joinTableName = new ArrayList<>();
